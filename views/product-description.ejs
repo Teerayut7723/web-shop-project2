@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>
+        AP Shopping market - หน้าหลักร้านค้า
+    </title>
+
+    <!-- insert layout/head.ejs file-->
+    <%- include('layouts/head') %>
+
+
+</head>
+
+<body>
+
+
+    <!-- insert layout/nav.ejs file-->
+    <%- include('layouts/nav') %>
+
+        <!--Product image preview-->
+
+        <div class="container bg-light mt-5">
+
+            <div class="display-6 bg-light m-5"><u>รายละเอียดสินค้า</u></div>
+
+            <div class="d-flex flex-md-row flex-column">
+                <div id="carouselExampleControlsNoTouching" class="carousel slide w-75 p-2" data-bs-touch="true"
+                    data-bs-interval="false">
+                    <div class="carousel-inner">
+                        <% for (d of data) { %>
+                            <!--separate for each image name-->
+
+                            <% let imgs=d.images.split(',') %>
+                                <div class="carousel-item active">
+                                    <img src="/product-images/<%= imgs[0] %>" class="d-block w-100" alt="Image">
+                                </div>
+                                <% for (i=1; i < imgs.length; i++) { %>
+                                    <div class="carousel-item">
+                                        <img src="/product-images/<%= imgs[i] %>" class="d-block w-100" alt="Image">
+                                    </div>
+                                    <% } %>
+                                        <% } %>
+                    </div>
+                    <button class="carousel-control-prev" type="button"
+                        data-bs-target="#carouselExampleControlsNoTouching" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button"
+                        data-bs-target="#carouselExampleControlsNoTouching" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+                <!--Detail product-->
+                <div class="p-2 w-75">
+
+                    <% for (d of data) { %>
+
+                        <% let imgs=d.images.split(',') %>
+
+                            <div class="display-7">รหัสสินค้า: <u>
+                                    <%= d.productCode %>
+                                </u></div>
+                            <br>
+                            <span class="display-7">ราคาต่อหน่วย:
+                                <u>
+                                    <%= d.price %>
+                                </u> บาท
+                            </span>
+                            <br>
+                            <p class="display-7 pt-3">
+                                <%= d.name %>&nbsp;<%= d.mainDescription %>
+                            </p>
+                            <br>
+                            <p class="display-7">
+                                <%= d.subDescription %>
+                            </p>
+
+                            <div class="d-flex flex-row">
+                                <div class="mx-3 mt-4">
+                                    <form action="" method="post" id="buyForm">
+
+                                        <input type="hidden" name="productCode" value="<%= d.productCode %>">
+                                        <input type="hidden" name="productName" value="<%= d.name %>">
+                                        <input type="hidden" name="productDescription" value="<%= d.mainDescription %>">
+                                        <input type="hidden" name="productPrice" value="<%= d.price %>">
+                                        <input type="hidden" name="productImage" value="<%= imgs[0] %>">
+
+                                        <% if (locals.msg) { %> 
+                                            <span style="color: red;"><%= msg %></span>
+                                            <% } %>
+                                                <div class="display-8 pb-2">ระบุจำนวนที่ต้องการ:</div>
+
+                                                <button type="button" id="minus" onclick="dataMinus()"
+                                                    style="background-color: rgb(184, 231, 250);"
+                                                    onmousedown="this.style.background='orange'"
+                                                    onmouseup="this.style.background='rgb(184, 231, 250)'">-</button>
+
+                                                <input type="text" id="data" name="qtyBuyProduct" value="1" class="mx-1"
+                                                    style="width: 50px; background-color: whitesmoke;"
+                                                    onkeyup="productRemainCheck()" onblur="checkDataEmpty()">
+
+                                                <button type="button" id="plus" onclick="dataPlus()"
+                                                    style="background-color: rgb(184, 231, 250);"
+                                                    onmousedown="this.style.background='orange'"
+                                                    onmouseup="this.style.background='rgb(184, 231, 250)'">+</button>
+
+                                                <div class="pt-2">คลัง: <%= d.productRemain %> ชิ้น</div>
+
+                                                <input type="hidden" id="productRemain" name="productRemain"
+                                                    value="<%= d.productRemain %>">
+                                                <button type="submit" class="btn btn-primary mt-2" id="btMoveCart"
+                                                    onclick="moveToCart()"><i class="bi bi-cart2"></i>
+                                                    ใส่รถเข็น</button>
+
+                                                <button type="submit" class="btn btn-primary mt-2"
+                                                    onclick="productInCart()"><i class="bi bi-coin"></i>
+                                                    สั่งเลยตอนนี้</button>
+                                    </form>
+                                </div>
+
+                            </div>
+
+                            <% } %>
+                </div>
+            </div>
+
+        </div>
+
+
+        <!--Function increase and decrease buy product-->
+        <script>
+
+            function dataMinus() {
+                var data = document.getElementById('data')
+                var dataValue = parseInt(data.value)
+                if (dataValue != 1) {
+                    dataValue = dataValue - 1
+                    data.value = dataValue.toString()
+
+                }
+            }
+
+            function dataPlus() {
+                var data = document.getElementById('data')
+                var productRemain = document.getElementById('productRemain')
+                var dataValue = parseInt(data.value)
+                var productRemainValue = parseInt(productRemain.value)
+
+                if (dataValue < productRemainValue) {
+                    dataValue = dataValue + 1
+                    data.value = dataValue.toString()
+                }
+            }
+
+            function productRemainCheck() {
+                let data = document.getElementById('data')
+                let productRemain = document.getElementById('productRemain')
+                let dataValue = parseInt(data.value)
+                let productRemainValue = parseInt(productRemain.value)
+
+                if (dataValue >= productRemainValue) {
+
+                    data.value = productRemainValue.toString()
+
+                } else if (dataValue > 0 && dataValue < productRemainValue) {
+                    data.value = dataValue.toString()
+                } else if (dataValue <= 0) {
+                    data.value = '1'
+                }
+            }
+
+            function checkDataEmpty() {
+                let data = document.getElementById('data')
+
+                if (data.value == '') {
+                    data.value = '1'
+
+                }
+            }
+
+
+            function moveToCart() {
+                var buyForm = document.getElementById('buyForm')
+
+                buyForm.action = '/product-description'
+            }
+
+            function productInCart() {
+                var buyForm = document.getElementById('buyForm')
+                buyForm.action = '/product-cart'
+            }
+
+        </script>
+
+        <!-- JavaScript Bundle with Popper -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
+            crossorigin="anonymous"></script>
+
+</body>
+
+</html>
