@@ -6,7 +6,7 @@ const bodyParser = require('body-parser')
 //const { request, response } = require('express')
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
-const { request, response } = require('express')
+const port = process.env.PORT
 //const customer = require('./customer')
 const app = express()
 
@@ -401,4 +401,4 @@ app.all('/shopping-cart', (request, response) => {
 
 
 
-app.listen(3000, () => console.log('Server started on port: 3000'))
+app.listen(port, () => console.log('Server started on port: 3000'))
