@@ -15,7 +15,7 @@
 
 </head>
 
-<body>
+<body onload="priceDefault()">
 
 
     <!-- insert layout/nav.ejs file-->
@@ -88,29 +88,38 @@
                                         <input type="hidden" name="productCode" value="<%= d.productCode %>">
                                         <input type="hidden" name="productName" value="<%= d.name %>">
                                         <input type="hidden" name="productDescription" value="<%= d.mainDescription %>">
-                                        <input type="hidden" name="productPrice" value="<%= d.price %>">
+                                        <input type="hidden" name="productPrice" id="productPrice"
+                                            value="<%= d.price %>">
                                         <input type="hidden" name="productImage" value="<%= imgs[0] %>">
 
-                                        <% if (locals.msg) { %> 
-                                            <span style="color: red;"><%= msg %></span>
+                                        <% if (locals.msg) { %>
+                                            <span style="color: red;">
+                                                <%= msg %>
+                                            </span>
                                             <% } %>
                                                 <div class="display-8 pb-2">ระบุจำนวนที่ต้องการ:</div>
+                                                <span>
+                                                    <button type="button" id="minus" onclick="dataMinus()"
+                                                        style="background-color: rgb(184, 231, 250); width: 35px; height: 35px;"
+                                                        onmousedown="this.style.background='orange'"
+                                                        onmouseup="this.style.background='rgb(184, 231, 250)'"> -
+                                                    </button>
 
-                                                <button type="button" id="minus" onclick="dataMinus()"
-                                                    style="background-color: rgb(184, 231, 250);"
-                                                    onmousedown="this.style.background='orange'"
-                                                    onmouseup="this.style.background='rgb(184, 231, 250)'">-</button>
+                                                    <input type="text" id="data" name="qtyBuyProduct" value="1"
+                                                        class="mx-1" style="width: 50px; background-color: whitesmoke;"
+                                                        onkeyup="productRemainCheck()" onblur="checkDataEmpty()">
 
-                                                <input type="text" id="data" name="qtyBuyProduct" value="1" class="mx-1"
-                                                    style="width: 50px; background-color: whitesmoke;"
-                                                    onkeyup="productRemainCheck()" onblur="checkDataEmpty()">
-
-                                                <button type="button" id="plus" onclick="dataPlus()"
-                                                    style="background-color: rgb(184, 231, 250);"
-                                                    onmousedown="this.style.background='orange'"
-                                                    onmouseup="this.style.background='rgb(184, 231, 250)'">+</button>
+                                                    <button type="button" id="plus" onclick="dataPlus()"
+                                                        style="background-color: rgb(184, 231, 250); width: 35px; height: 35px;"
+                                                        onmousedown="this.style.background='orange'"
+                                                        onmouseup="this.style.background='rgb(184, 231, 250)'"> +
+                                                    </button>
+                                                </span>
 
                                                 <div class="pt-2">คลัง: <%= d.productRemain %> ชิ้น</div>
+
+                                                <div id="priceTotal" name="priceTotal"
+                                                    style="color: blue; margin-left: 10px; margin-top: 5px; font-size: 20px;"></div>
 
                                                 <input type="hidden" id="productRemain" name="productRemain"
                                                     value="<%= d.productRemain %>">
@@ -144,6 +153,16 @@
                     data.value = dataValue.toString()
 
                 }
+
+                var buyTotal = document.getElementById('data')
+                var buyTotalNum = parseInt(buyTotal.value)
+
+                var pricePerPiece = document.getElementById('productPrice')
+                var pricePerPieceNum = parseInt(pricePerPiece.value)
+
+                var priceTotal = document.getElementById('priceTotal')
+
+                priceTotal.innerHTML = 'ราคารวม = ' + (buyTotalNum * pricePerPieceNum).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' บาท'
             }
 
             function dataPlus() {
@@ -156,6 +175,16 @@
                     dataValue = dataValue + 1
                     data.value = dataValue.toString()
                 }
+
+                var buyTotal = document.getElementById('data')
+                var buyTotalNum = parseInt(buyTotal.value)
+
+                var pricePerPiece = document.getElementById('productPrice')
+                var pricePerPieceNum = parseInt(pricePerPiece.value)
+
+                var priceTotal = document.getElementById('priceTotal')
+
+                priceTotal.innerHTML = 'ราคารวม = ' + (buyTotalNum * pricePerPieceNum).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' บาท'
             }
 
             function productRemainCheck() {
@@ -194,6 +223,19 @@
             function productInCart() {
                 var buyForm = document.getElementById('buyForm')
                 buyForm.action = '/product-cart'
+            }
+
+            //ราคารวมเรื่มต้นที่แสดง
+            function priceDefault() {
+                var buyTotal = document.getElementById('data')
+                var buyTotalNum = parseInt(buyTotal.value)
+
+                var pricePerPiece = document.getElementById('productPrice')
+                var pricePerPieceNum = parseInt(pricePerPiece.value)
+
+                var priceTotal = document.getElementById('priceTotal')
+
+                priceTotal.innerHTML = 'ราคารวม = ' + (buyTotalNum * pricePerPieceNum).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' บาท'
             }
 
         </script>

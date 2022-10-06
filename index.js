@@ -34,8 +34,8 @@ app.all('/', (request, response) => {
     if (request.session.login) { // อ่านค่าใน session
         let userName = request.session.firstname
         let quantity = request.session.quantity || ''
-        
-        if (quantity == '' ) {
+
+        if (quantity == '') {
             quantity = '0'
         }
 
@@ -43,10 +43,15 @@ app.all('/', (request, response) => {
         Product.find().exec((err, docs) => {
             response.render('index', { logedIn: true, user: userName, data: docs, qtyInCart: quantity })
         })
+        //ถ้าไม่ได้ log-in
     } else {
+        let quantity = request.session.quantity || ''
+        if (quantity == '') {
+            quantity = '0'
+        }
         // อ่านข้อมูล database และส่งไปแสดงที่ card
         Product.find().exec((err, docs) => {
-            response.render('index', { logedIn: false, data: docs, qtyInCart: '0' })
+            response.render('index', { logedIn: false, data: docs, qtyInCart: quantity })
         })
 
     }
@@ -328,17 +333,53 @@ app.all('/product-description', (request, response) => {
     let listInCart = [] //เก็บ list รายการและจำนวนสินค้าในรถเข็น
     let listMainInCart = request.session.userID || [] //array เก็บข้อมูลหลัก list รายการและจำนวนสินค้าในรถเข็น
     let quantity = request.session.quantity || ''
+    
     Product
         .find()
         .where('productCode').equals(productCode)
         .exec((err, docs) => {
             if (!err) {
-                if (!request.session.login && request.body.qtyBuyProduct) { //กดปุ่มใส่รถเข็นโดยที่ยังไม่ได้ log-in
+                if (!request.session.login) { //เข้ามาแบบไม่ได้ log-in
 
-                    response.render('userNot-logIn')
-                }
-                else if (!request.session.login) { //เข้ามาแบบไม่ได้ log-in
-                    response.render('product-description', { logedIn: false, data: docs, qtyInCart: '0' })
+                    if (!request.body.qtyBuyProduct) {
+
+                        if (quantity == '') { //มาหน้านี้ครั้งแรก
+                            quantity = '0'
+                        }
+                        
+                        response.render('product-description', { logedIn: false, data: docs, qtyInCart: quantity })
+
+                    } else { // check product code ถ้าในรถเข็นมีแล้ว ให้ทำการบวกจำนวนเพิ่มเข้าไป และลบข้อมูลเก่าทิ้งไป
+                        let sumQty = 0
+                        for (i in listMainInCart) {
+
+                            if (listMainInCart[i].includes(productCode)) {
+
+                                sumQty = parseInt(listMainInCart[i][4]) + parseInt(qtyBuyProduct)
+                                if (sumQty <= parseInt(productRemain)) { // ถ้าบวกกันแล้วไม่เกินของที่เหลือในคลัง
+                                    qtyBuyProduct = sumQty.toString()
+                                } else {
+                                    qtyBuyProduct = productRemain //ถ้าซื้อมากกว่าที่มีในคลังให้มีค่าเท่ากับของที่เหลือในคลัง
+                                }
+
+                                // ลบข้อมูลในรายการนี้ออกเพื่อทำการเพิ่มเข้าไปใหม่
+                                let dataDelete = listMainInCart.splice(i, 1)
+                            }
+                        }
+                        listInCart.push(productCode, productName, productDescription, productPrice, qtyBuyProduct, productImage, productRemain)
+                        listMainInCart.push(listInCart)
+                        console.log(listInCart[0], listInCart[1], listInCart[2], listInCart[3], listInCart[4])
+                        console.log(listMainInCart[0], listMainInCart[1], listMainInCart[2], listMainInCart[3], listMainInCart[4])
+                        console.log(listMainInCart.length)
+                        request.session.quantity = listMainInCart.length.toString()
+                        request.session.userID = listMainInCart
+                        quantity = listMainInCart.length.toString()
+                        //request.session.cookie.maxAge = 30 * 60 * 1000 // กำหนดเวลา session ของผู้ใช้
+                        response.render('product-description', { logedIn: false, data: docs, qtyInCart: quantity, msg: 'ใส่รถเข็นแล้ว' })
+
+                    }
+
+                    // เข้ามาแบบ log-in แล้ว
                 } else {
 
                     //ถ้ามาหน้านี้ครั้งแรกและ log-in แล้ว
@@ -352,33 +393,33 @@ app.all('/product-description', (request, response) => {
                         response.render('product-description', { logedIn: true, user: userName, data: docs, qtyInCart: quantity })
 
                     } else { // check product code ถ้าในรถเข็นมีแล้ว ให้ทำการบวกจำนวนเพิ่มเข้าไป และลบข้อมูลเก่าทิ้งไป
-                            let sumQty = 0 
-                            for (i in listMainInCart) {
-                                
-                                if (listMainInCart[i].includes(productCode)) {
-                                    
-                                    sumQty = parseInt(listMainInCart[i][4]) + parseInt(qtyBuyProduct)
-                                    if (sumQty <= parseInt(productRemain)) { // ถ้าบวกกันแล้วไม่เกินของที่เหลือในคลัง
-                                        qtyBuyProduct = sumQty.toString()
-                                    } else {
-                                        qtyBuyProduct = productRemain //ถ้าซื้อมากกว่าที่มีในคลังให้มีค่าเท่ากับของที่เหลือในคลัง
-                                    }
-                                    
-                                    // ลบข้อมูลนรายการนี้ออกเพื่อทำการเพิ่มเข้าไปใหม่
-                                    let dataDelete = listMainInCart.splice(i,1)
+                        let sumQty = 0
+                        for (i in listMainInCart) {
+
+                            if (listMainInCart[i].includes(productCode)) {
+
+                                sumQty = parseInt(listMainInCart[i][4]) + parseInt(qtyBuyProduct)
+                                if (sumQty <= parseInt(productRemain)) { // ถ้าบวกกันแล้วไม่เกินของที่เหลือในคลัง
+                                    qtyBuyProduct = sumQty.toString()
+                                } else {
+                                    qtyBuyProduct = productRemain //ถ้าซื้อมากกว่าที่มีในคลังให้มีค่าเท่ากับของที่เหลือในคลัง
                                 }
+
+                                // ลบข้อมูลในรายการนี้ออกเพื่อทำการเพิ่มเข้าไปใหม่
+                                let dataDelete = listMainInCart.splice(i, 1)
                             }
-                            listInCart.push(productCode, productName,productDescription, productPrice, qtyBuyProduct, productImage,productRemain)
-                            listMainInCart.push(listInCart)
-                            console.log(listInCart[0], listInCart[1], listInCart[2], listInCart[3], listInCart[4])
-                            console.log(listMainInCart[0],listMainInCart[1],listMainInCart[2],listMainInCart[3],listMainInCart[4])
-                            console.log(listMainInCart.length)
-                            request.session.quantity = listMainInCart.length.toString()
-                            request.session.userID = listMainInCart
-                            quantity = listMainInCart.length.toString()
-                            request.session.cookie.maxAge = 30 * 60 * 1000 // กำหนดเวลา session ของผู้ใช้
-                            response.render('product-description', { logedIn: true, user: userName, data: docs, qtyInCart: quantity, msg: 'ใส่รถเข็นแล้ว' })
-                        
+                        }
+                        listInCart.push(productCode, productName, productDescription, productPrice, qtyBuyProduct, productImage, productRemain)
+                        listMainInCart.push(listInCart)
+                        console.log(listInCart[0], listInCart[1], listInCart[2], listInCart[3], listInCart[4])
+                        console.log(listMainInCart[0], listMainInCart[1], listMainInCart[2], listMainInCart[3], listMainInCart[4])
+                        console.log(listMainInCart.length)
+                        request.session.quantity = listMainInCart.length.toString()
+                        request.session.userID = listMainInCart
+                        quantity = listMainInCart.length.toString()
+                        request.session.cookie.maxAge = 30 * 60 * 1000 // กำหนดเวลา session ของผู้ใช้
+                        response.render('product-description', { logedIn: true, user: userName, data: docs, qtyInCart: quantity, msg: 'ใส่รถเข็นแล้ว' })
+
                     }
 
                 }
@@ -388,14 +429,14 @@ app.all('/product-description', (request, response) => {
 
 // เพิ่มการสั่งซื้อสินค้าไปยังรถเข็น
 
-app.all('/shopping-cart', (request, response) => {
+app.all('/product-cart', (request, response) => {
 
 
     let userName = request.session.firstname
     // กรณีผู้ใช้ยังไม่ได้ทำการ log-in
 
     if (!request.session.login) {
-        response.render('userNot-logIn')
+        response.render('products-InCart',{logedIn: false})
     } else {
         // กรณีผู้ใช้ยังได้ทำการ log-in แล้ว
 
