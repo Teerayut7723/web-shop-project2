@@ -25,17 +25,17 @@
                 <div class="form-floating mb-3 col-md-6">
                     <input type="email" class="form-control" name="login" id="floatingInput"
                         placeholder="name@example.com" value="<%= login %>" required>
-                    <label for="floatingInput">Email address</label>
+                    <label for="floatingInput">อีเมล์</label>
                 </div>
                 <div class="form-floating col-md-6">
                     <input type="password" class="form-control" name="password" id="floatingPassword"
                         placeholder="Password" value="<%= password %>" required>
-                    <label for="floatingPassword">Password</label>
-                    <input type="checkbox" onclick="pwView()">Show password
+                    <label for="floatingPassword">รหัสผ่าน</label>
+                    <input type="checkbox" onclick="pwView()">แสดงรหัสผ่าน
                 </div>
                 <br><br>
                 <div>
-                    <input type="checkbox" name="save" value="checked" <%=save %>>เก็บไว้ในเครื่องนี้
+                    <input type="checkbox" name="save" value="checked" <%= save %>>เก็บไว้ในเครื่องนี้
                 </div>
                 <br><br>
                 <div>
@@ -48,14 +48,24 @@
                     <% if (login && logedIn) { %>
                         สวัสดีค่ะ คุณ <%= login %> <br>
                             <h4>คุณเข้าสู่ระบบแล้ว</h4>
-                            
+
                             <% } else if (locals.valid==false) { %>
                                 <h4 style="color:red">คุณใส่ Email หรือ Password ไม่ถูกต้อง</h4>
                                 <% } %>
                 </div>
                 <br><br>
-                <a href="/">กลับหน้าหลัก</a>
+                <div class="row">
+
+                    <form action="" method="post" id="formAction">
+                        <button type="submit" onclick="home()" class="btn btn-primary">กลับหน้าหลัก</button>
+
+                        <button type="submit" onclick="signin()" class="btn btn-primary">สมัครสมาชิกใหม่</button>
+
+                    </form>
+                </div>
+                <br><br>
     </div>
+
     <script>
         function pwView() {
             let x = document.getElementById("floatingPassword");
@@ -64,6 +74,16 @@
             } else {
                 x.type = "password";
             }
+        }
+
+        function home () {
+            var home = document.getElementById('formAction')
+            home.action = '/'
+        }
+
+        function signin () {
+            var signin = document.getElementById('formAction')
+            signin.action = '/signin'
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"

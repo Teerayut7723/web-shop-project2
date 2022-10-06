@@ -89,7 +89,11 @@
 <!--basket sticky-->
 
 <div class="d-flex justify-content-end mt-4" id="basket">
-    <button type="button" class="btn btn-primary rounded-pill" name="basket"><i class="bi bi-cart2"></i>
-        รถเข็น<span class="badge text-bg-danger"><%= qtyInCart %></span>
-    </button>
+    <form action="/product-cart" method="post">
+        <button type="submit" class="btn btn-primary rounded-pill" name="basket"><i class="bi bi-cart2"></i>
+            รถเข็น<span class="badge text-bg-danger">
+                <%= qtyInCart %>
+            </span>
+        </button>
+    </form>
 </div>
