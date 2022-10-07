@@ -7,10 +7,10 @@ const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
 //ใช้กับ online
-//const port = process.env.PORT
+const port = process.env.PORT
 
 //ใช้กับ localhost
-const port = 3000
+//const port = 3000
 //const customer = require('./customer')
 const app = express()
 
