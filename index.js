@@ -427,7 +427,7 @@ app.all('/product-description', (request, response) => {
         })
 })
 
-// เพิ่มการสั่งซื้อสินค้าไปยังรถเข็น
+// list สินค้าในรถเข็น ก่อนยืนยันสั่งซื้อ
 
 app.all('/product-cart', (request, response) => {
 
