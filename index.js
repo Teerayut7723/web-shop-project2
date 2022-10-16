@@ -433,14 +433,15 @@ app.all('/product-cart', (request, response) => {
 
 
     let userName = request.session.firstname
+    let userID = request.session.userID
     // กรณีผู้ใช้ยังไม่ได้ทำการ log-in
 
     if (!request.session.login) {
-        response.render('products-InCart',{logedIn: false})
+        response.render('products-InCart',{logedIn: false, data: userID})
     } else {
         // กรณีผู้ใช้ยังได้ทำการ log-in แล้ว
 
-        response.render('products-InCart', { logedIn: true, user: userName })
+        response.render('products-InCart', { logedIn: true, user: userName, data: userID })
     }
 })
 
