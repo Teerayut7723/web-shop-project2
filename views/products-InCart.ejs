@@ -36,70 +36,61 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <% let list=data;
-                    let idMinus = '';
-                    let idData = '';
-                    let idPlus = '';
-                    let idPrice = '';
-                    let idPriceTotal = '';
-
-                    if (list !=undefined) { 
-                        let item=list.length; 
-                     } 
-                        %>
-                        <% for ( i in list ) { 
-                            idMinus = 'minus' + i;
-                            idData = 'data' + i;
-                            idPlus = 'plus' + i; 
-                            idPrice = 'price' + i;
-                            idPriceTotal = 'priceTotal' + i;
-                            
-                        %>
-                                <tr>
-                                    <td scope="row">
-                                        <div><input type="checkbox" name="item1" value="item1"
-                                                style="height: 20px; width: 20px;">
-                                            <img src="product-images/<%= list[i][5] %>" alt="Images"
-                                                style="height: 77px; width: 77px; margin-left: 5px; text-align: center; margin-right: 25px;"><%= list[i][1] %>
+                    <% let list=data; let idMinus='' ; let idData='' ; let idPlus='' ; let idPrice='' ; let
+                        idPriceTotal='' ; let idProductRemain = ''; if (list !=undefined) { let item=list.length; } %>
+                        <% for ( i in list ) { idMinus='minus' + i; idData='data' + i; idPlus='plus' + i;
+                            idPrice='price' + i; idPriceTotal='priceTotal' + i; idProductRemain = 'productRemain' + i; %>
+                            <tr>
+                                <td scope="row">
+                                    <div><input type="checkbox" name="item1" value="item1"
+                                            style="height: 20px; width: 20px;">
+                                        <img src="product-images/<%= list[i][5] %>" alt="Images"
+                                            style="height: 77px; width: 77px; margin-left: 5px; text-align: center; margin-right: 25px;">
+                                        <%= list[i][1] %>
                                             <%= list[i][2] %>
-                                        </div>
-                                    </td>
-                                    <td><div id="<%= idPrice %>"><%= list[i][3] %></div> บาท</td>
-                                    <td>
-                                        <span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div id="<%= idPrice %>">
+                                        <%= list[i][3] %>
+                                    </div> บาท
+                                </td>
+                                <td>
+                                    <span>
 
-                                            <button type="button" id="<%= idMinus %>" onclick="dataMinus()"
-                                                style="background-color: rgb(184, 231, 250); width: 30px; height: 30px; text-align: center;"
-                                                onmousedown="this.style.background='orange'"
-                                                onmouseup="this.style.background='rgb(184, 231, 250)'">-
-                                            </button>
+                                        <button type="button" id="<%= idMinus %>" onclick="dataMinusCheck()"
+                                            style="background-color: rgb(184, 231, 250); width: 30px; height: 30px; text-align: center;"
+                                            onmousedown="this.style.background='orange'"
+                                            onmouseup="this.style.background='rgb(184, 231, 250)'">-
+                                        </button>
 
-                                            <input type="text" id="<%= idData %>" name="qtyBuyProduct" value="<%= list[i][4] %>"
-                                                class="my-1" style="width: 50px; background-color: whitesmoke;"
-                                                onkeyup="productRemainCheck()" onblur="checkDataEmpty()">
+                                        <input type="text" id="<%= idData %>" name="qtyBuyProduct"
+                                            value="<%= list[i][4] %>" class="my-1"
+                                            style="width: 50px; background-color: whitesmoke;" disabled>
 
-                                            <button type="button" id="<%= idPlus %>" onclick="dataPlus()"
-                                                style="background-color: rgb(184, 231, 250); width: 30px; height: 30px; text-align: center;"
-                                                onmousedown="this.style.background='orange'"
-                                                onmouseup="this.style.background='rgb(184, 231, 250)'">+
-                                            </button>
+                                        <button type="button" id="<%= idPlus %>" onclick="dataPlusCheck()"
+                                            style="background-color: rgb(184, 231, 250); width: 30px; height: 30px; text-align: center;"
+                                            onmousedown="this.style.background='orange'"
+                                            onmouseup="this.style.background='rgb(184, 231, 250)'">+
+                                        </button>
 
-                                        </span>
-                                    </td>
-                                    <td id="<%= idPriceTotal %>">-</td>
-                                    <td><button type="button" class="btn btn-warning">ลบ</td>
+                                    </span>
+                                </td>
+                                <td id="<%= idPriceTotal %>">-</td>
+                                <td><button type="button" class="btn btn-warning">ลบ</td>
 
-                                        <input type="hidden" id="qtyList" value="<%= list.length %>">
-                                       
-                                        <% } %>
+                                <input type="hidden" id="qtyList" value="<%= list.length %>">
+                                <input type="hidden" id="<%= idProductRemain %>" value="<%= list[i][6] %>">
+
+                                <% } %>
 
                 </tbody>
                 <tfoot class="table-primary">
-                     <tr>
+                    <tr>
                         <td scope="row"></td>
                         <td colspan="2">ราคารวมทั้งหมด</td>
                         <td colspan="2" id="grandTotal">-</td>
-                        
+
                     </tr>
                 </tfoot>
             </table>
@@ -116,26 +107,60 @@
     </div>
 
     <script>
+        // กดปุ่มลบจำนวนที่สั่ง
+        function dataMinusCheck() {
+
+            let qtyList = document.getElementById('qtyList')
+            let qtyInt = parseInt(qtyList.value)
+
+            for (let i = 0; i < qtyInt; i++) {
+                document.getElementById('minus' + i).onclick = function () { dataMinus(i) }
+
+            }
+
+        }
+
         function dataMinus(x) {
-            var data = document.getElementById('data' + x)
-            var dataValue = parseInt(data.value)
-            console.log(data.value)
+
+            let data = document.getElementById('data' + x)
+            let dataValue = parseInt(data.value)
+
+            let qtyList = document.getElementById('qtyList')
+            let qtyInt = parseInt(qtyList.value)
+
             if (dataValue != 1) {
                 dataValue = dataValue - 1
                 data.value = dataValue.toString()
-
+                sumPrice(qtyInt) //หลังจากลบ เรียก function เพื่อ sum ราคาใหม่
             }
         }
 
+        // กดปุ่มบวกจำนวนที่สั่ง
+        function dataPlusCheck() {
+
+            let qtyList = document.getElementById('qtyList')
+            let qtyInt = parseInt(qtyList.value)
+
+            for (let i = 0; i < qtyInt; i++) {
+                document.getElementById('plus' + i).onclick = function () { dataPlus(i) }
+
+            }
+
+        }
+
         function dataPlus(y) {
-            var data = document.getElementById('data' + y)
-            //var productRemain = document.getElementById('productRemain')
-            var dataValue = parseInt(data.value)
-            //var productRemainValue = parseInt(productRemain.value)
-            console.log(data.value)
-            if (dataValue < 10) {
+            let data = document.getElementById('data' + y)
+            let productRemain = document.getElementById('productRemain' + y)
+            let dataValue = parseInt(data.value)
+            let productRemainValue = parseInt(productRemain.value)
+
+            let qtyList = document.getElementById('qtyList')
+            let qtyInt = parseInt(qtyList.value)
+            
+            if (dataValue < productRemainValue) {
                 dataValue = dataValue + 1
                 data.value = dataValue.toString()
+                sumPrice(qtyInt) //หลังจากเพิ่ม เรียก function เพื่อ sum ราคาใหม่
             }
         }
 
@@ -145,10 +170,12 @@
 
             let qtyList = document.getElementById('qtyList')
             let qtyInt = parseInt(qtyList.value)
-            
+
 
             if (qtyInt > 0) {
                 sumPrice(qtyInt)
+                dataMinusCheck() // onload หน้านี้เสร็จเรียกฟังชั่น
+                dataPlusCheck() // onload หน้านี้เสร็จเรียกฟังชั่น
                 
             }
 
@@ -161,15 +188,15 @@
             let priceTotal = ''
             let sumTotal = 0
             let grandTotal = document.getElementById('grandTotal')
-            
-            for (let i=0; i < qtyInt; i++) {
+
+            for (let i = 0; i < qtyInt; i++) {
 
                 priceTotal = document.getElementById('priceTotal' + i)
                 sumPrice = parseInt(document.getElementById('price' + i).innerHTML) * parseInt(document.getElementById('data' + i).value) //นำราคาต่อหน่วยคูณกับจำนวนชิ้น
                 priceTotal.innerHTML = sumPrice.toString().toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' บาท'
                 sumTotal = sumTotal + sumPrice
             }
-            
+
             grandTotal.innerHTML = sumTotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' บาท'
         }
 

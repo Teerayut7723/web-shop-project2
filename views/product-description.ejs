@@ -106,8 +106,7 @@
                                                     </button>
 
                                                     <input type="text" id="data" name="qtyBuyProduct" value="1"
-                                                        class="mx-1" style="width: 50px; background-color: whitesmoke;"
-                                                        onkeyup="productRemainCheck()" onblur="checkDataEmpty()">
+                                                        class="mx-1" style="width: 50px; background-color: whitesmoke;" disabled>
 
                                                     <button type="button" id="plus" onclick="dataPlus()"
                                                         style="background-color: rgb(184, 231, 250); width: 35px; height: 35px;"
@@ -186,33 +185,6 @@
 
                 priceTotal.innerHTML = 'ราคารวม = ' + (buyTotalNum * pricePerPieceNum).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' บาท'
             }
-
-            function productRemainCheck() {
-                let data = document.getElementById('data')
-                let productRemain = document.getElementById('productRemain')
-                let dataValue = parseInt(data.value)
-                let productRemainValue = parseInt(productRemain.value)
-
-                if (dataValue >= productRemainValue) {
-
-                    data.value = productRemainValue.toString()
-
-                } else if (dataValue > 0 && dataValue < productRemainValue) {
-                    data.value = dataValue.toString()
-                } else if (dataValue <= 0) {
-                    data.value = '1'
-                }
-            }
-
-            function checkDataEmpty() {
-                let data = document.getElementById('data')
-
-                if (data.value == '') {
-                    data.value = '1'
-
-                }
-            }
-
 
             function moveToCart() {
                 var buyForm = document.getElementById('buyForm')
