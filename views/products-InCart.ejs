@@ -66,7 +66,8 @@
 
                                         <input type="text" id="<%= idData %>" name="qtyBuyProduct"
                                             value="<%= list[i][4] %>" class="my-1"
-                                            style="width: 50px; background-color: whitesmoke;" disabled>
+                                            style="width: 50px; background-color: whitesmoke;" 
+                                            onkeyup="dataRemainCheck()" onblur="dataEmptyCheck()">
 
                                         <button type="button" id="<%= idPlus %>" onclick="dataPlusCheck()"
                                             style="background-color: rgb(184, 231, 250); width: 30px; height: 30px; text-align: center;"
@@ -77,7 +78,14 @@
                                     </span>
                                 </td>
                                 <td id="<%= idPriceTotal %>">-</td>
-                                <td><button type="button" class="btn btn-warning">ลบ</td>
+                                <td>
+                                    <form action="/" method="post">
+
+                                    <input type="hidden" id="delete" name="delete" value="delete">
+                                    <button type="button" class="btn btn-warning">ลบ
+
+                                    </form>
+                                </td>
 
                                 <input type="hidden" id="qtyList" value="<%= list.length %>">
                                 <input type="hidden" id="<%= idProductRemain %>" value="<%= list[i][6] %>">
@@ -163,6 +171,65 @@
                 sumPrice(qtyInt) //หลังจากเพิ่ม เรียก function เพื่อ sum ราคาใหม่
             }
         }
+        // ตรวจสอบว่าสินค้าในคลังเหลือเท่าไร เพื่อจำกัดการใส่จำนวนที่สั่งซื้อ
+        function dataRemainCheck() {
+
+            let qtyList = document.getElementById('qtyList')
+            let qtyInt = parseInt(qtyList.value)
+
+            for (let i = 0; i < qtyInt; i++) {
+             document.getElementById('data' + i).onkeyup = function () { remainCheck(i) }
+
+            }
+
+        }
+
+        function remainCheck(x) {
+                let data = document.getElementById('data' + x)
+                let productRemain = document.getElementById('productRemain' + x)
+                let dataValue = parseInt(data.value)
+                let productRemainValue = parseInt(productRemain.value)
+
+                let qtyList = document.getElementById('qtyList')
+                let qtyInt = parseInt(qtyList.value)
+
+                if (dataValue >= productRemainValue) {
+
+                    data.value = productRemainValue.toString()
+
+                } else if (dataValue > 0 && dataValue < productRemainValue) {
+                    data.value = dataValue.toString()
+                } else if (dataValue <= 0 || typeof(dataValue)!= Number) {
+                    data.value = '1'
+                }
+
+                sumPrice(qtyInt) //หลังจากใส่จำนวนเรียกฟังก์ชัน sumPrice เพื่อรวมราคาใหม่
+            }
+            // ตรวจสอบว่าจำนวนที่สั่งไม่ได้เท่ากับว่าง(ไม่ได้ใส่จำนวนที่สั่ง)
+            function dataEmptyCheck() {
+
+                let qtyList = document.getElementById('qtyList')
+                let qtyInt = parseInt(qtyList.value)
+
+                for (let i = 0; i < qtyInt; i++) {
+                    document.getElementById('data' + i).onblur = function () { dataEmpty(i) }
+
+                }
+
+            }
+
+            function dataEmpty(y) {
+                let data = document.getElementById('data' + y)
+
+                let qtyList = document.getElementById('qtyList')
+                let qtyInt = parseInt(qtyList.value)
+
+                if (data.value == '') {
+                    data.value = '1'
+
+                }
+                sumPrice(qtyInt) //หลังจากใส่จำนวนเรียกฟังก์ชัน sumPrice เพื่อรวมราคาใหม่
+            }
 
         // ตรวจสอบจำนวนรายการที่สั่งซื้อ
 
@@ -176,7 +243,8 @@
                 sumPrice(qtyInt)
                 dataMinusCheck() // onload หน้านี้เสร็จเรียกฟังชั่น
                 dataPlusCheck() // onload หน้านี้เสร็จเรียกฟังชั่น
-                
+                dataRemainCheck() // onload หน้านี้เสร็จเรียกฟังชั่น
+                dataEmptyCheck() // onload หน้านี้เสร็จเรียกฟังชั่น
             }
 
         }
