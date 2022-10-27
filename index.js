@@ -31,6 +31,21 @@ app.use(session({
 //Main page
 app.all('/', (request, response) => {
 
+    let listMainInCart = request.session.userID || [] //array เก็บข้อมูลหลัก list รายการและจำนวนสินค้าในรถเข็น
+    let dataQuantityList = request.body.dataQuantityList || '' //รับค่าจำนวนที่สั่งเพื่ออัพเดตใหม่ จากหน้าในรถเข็น
+    if (dataQuantityList != '') {
+
+        let dataListArr = dataQuantityList.split(',')
+        for (i in listMainInCart) {
+            if (listMainInCart[i][0] == dataListArr[0]) { //compare product code ตรงกันใน list หน้ารถเข็น
+
+                listMainInCart[i][4] = dataListArr[1]
+                dataListArr.splice(0, 2)
+            }
+        }
+
+    }
+
     if (request.session.login) { // อ่านค่าใน session
         let userName = request.session.firstname
         let quantity = request.session.quantity || ''
@@ -333,7 +348,7 @@ app.all('/product-description', (request, response) => {
     let listInCart = [] //เก็บ list รายการและจำนวนสินค้าในรถเข็น
     let listMainInCart = request.session.userID || [] //array เก็บข้อมูลหลัก list รายการและจำนวนสินค้าในรถเข็น
     let quantity = request.session.quantity || ''
-    
+
     Product
         .find()
         .where('productCode').equals(productCode)
@@ -346,7 +361,7 @@ app.all('/product-description', (request, response) => {
                         if (quantity == '') { //มาหน้านี้ครั้งแรก
                             quantity = '0'
                         }
-                        
+
                         response.render('product-description', { logedIn: false, data: docs, qtyInCart: quantity })
 
                     } else { // check product code ถ้าในรถเข็นมีแล้ว ให้ทำการบวกจำนวนเพิ่มเข้าไป และลบข้อมูลเก่าทิ้งไป
@@ -368,9 +383,9 @@ app.all('/product-description', (request, response) => {
                         }
                         listInCart.push(productCode, productName, productDescription, productPrice, qtyBuyProduct, productImage, productRemain)
                         listMainInCart.push(listInCart)
-                        console.log(listInCart[0], listInCart[1], listInCart[2], listInCart[3], listInCart[4])
-                        console.log(listMainInCart[0], listMainInCart[1], listMainInCart[2], listMainInCart[3], listMainInCart[4])
-                        console.log(listMainInCart.length)
+                        //console.log(listInCart[0], listInCart[1], listInCart[2], listInCart[3], listInCart[4])
+                        //console.log(listMainInCart[0], listMainInCart[1], listMainInCart[2], listMainInCart[3], listMainInCart[4])
+                        //console.log(listMainInCart.length)
                         request.session.quantity = listMainInCart.length.toString()
                         request.session.userID = listMainInCart
                         quantity = listMainInCart.length.toString()
@@ -411,9 +426,9 @@ app.all('/product-description', (request, response) => {
                         }
                         listInCart.push(productCode, productName, productDescription, productPrice, qtyBuyProduct, productImage, productRemain)
                         listMainInCart.push(listInCart)
-                        console.log(listInCart[0], listInCart[1], listInCart[2], listInCart[3], listInCart[4])
-                        console.log(listMainInCart[0], listMainInCart[1], listMainInCart[2], listMainInCart[3], listMainInCart[4])
-                        console.log(listMainInCart.length)
+                        //console.log(listInCart[0], listInCart[1], listInCart[2], listInCart[3], listInCart[4])
+                        //console.log(listMainInCart[0], listMainInCart[1], listMainInCart[2], listMainInCart[3], listMainInCart[4])
+                        //console.log(listMainInCart.length)
                         request.session.quantity = listMainInCart.length.toString()
                         request.session.userID = listMainInCart
                         quantity = listMainInCart.length.toString()
@@ -433,15 +448,38 @@ app.all('/product-cart', (request, response) => {
 
 
     let userName = request.session.firstname
-    let userID = request.session.userID
+    let listMainInCart = request.session.userID
+
+    let deleteItem = request.body.itemDelete || ''
+    let productCode = request.body.itemCode || ''
+
     // กรณีผู้ใช้ยังไม่ได้ทำการ log-in
 
     if (!request.session.login) {
-        response.render('products-InCart',{logedIn: false, data: userID})
+
+        //ถ้าเข้ามาแบบไม่ได้ log-in และ ทำการลบข้อมูลใน list
+        if (deleteItem == 'itemDelete') {
+            for (i in listMainInCart) {
+                if (listMainInCart[i].includes(productCode)) {
+                    listMainInCart.splice(i, 1)
+                }
+            }
+            request.session.quantity = listMainInCart.length.toString() // update data quantity
+        }
+        response.render('products-InCart', { logedIn: false, data: listMainInCart })
     } else {
         // กรณีผู้ใช้ยังได้ทำการ log-in แล้ว
 
-        response.render('products-InCart', { logedIn: true, user: userName, data: userID })
+        //ถ้าเข้ามาแบบ log-in แล้วและ ทำการลบข้อมูลใน list
+        if (deleteItem == 'itemDelete') {
+            for (i in listMainInCart) {
+                if (listMainInCart[i].includes(productCode)) {
+                    listMainInCart.splice(i, 1)
+                }
+            }
+            request.session.quantity = listMainInCart.length.toString() // update data quantity
+        }
+        response.render('products-InCart', { logedIn: true, user: userName, data: listMainInCart })
     }
 })
 

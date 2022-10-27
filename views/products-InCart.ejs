@@ -37,9 +37,11 @@
                 </thead>
                 <tbody>
                     <% let list=data; let idMinus='' ; let idData='' ; let idPlus='' ; let idPrice='' ; let
-                        idPriceTotal='' ; let idProductRemain = ''; if (list !=undefined) { let item=list.length; } %>
+                        idPriceTotal='' ; let idProductRemain='' ; let idDelete='' ; let idProductCode='' ; let
+                        idTextDelete='' ; if (list !=undefined) { let item=list.length; } %>
                         <% for ( i in list ) { idMinus='minus' + i; idData='data' + i; idPlus='plus' + i;
-                            idPrice='price' + i; idPriceTotal='priceTotal' + i; idProductRemain = 'productRemain' + i; %>
+                            idPrice='price' + i; idPriceTotal='priceTotal' + i; idProductRemain='productRemain' + i;
+                            idDelete='delete' + i; idProductCode='productCode' + i; idTextDelete='textDelete' + i; %>
                             <tr>
                                 <td scope="row">
                                     <div><input type="checkbox" name="item1" value="item1"
@@ -66,7 +68,7 @@
 
                                         <input type="text" id="<%= idData %>" name="qtyBuyProduct"
                                             value="<%= list[i][4] %>" class="my-1"
-                                            style="width: 50px; background-color: whitesmoke;" 
+                                            style="width: 50px; background-color: whitesmoke;"
                                             onkeyup="dataRemainCheck()" onblur="dataEmptyCheck()">
 
                                         <button type="button" id="<%= idPlus %>" onclick="dataPlusCheck()"
@@ -79,11 +81,11 @@
                                 </td>
                                 <td id="<%= idPriceTotal %>">-</td>
                                 <td>
-                                    <form action="/" method="post">
-
-                                    <input type="hidden" id="delete" name="delete" value="delete">
-                                    <button type="button" class="btn btn-warning">ลบ
-
+                                    <form action="" method="post" id="formDelete">
+                                        <input type="hidden" id="<%= idProductCode %>" value="<%= list[i][0] %>">
+                                        <input type="hidden" id="<%= idTextDelete %>">
+                                        <button type="submit" id="<%= idDelete %>" class="btn btn-warning"
+                                            onclick="deleteItem()">ลบ
                                     </form>
                                 </td>
 
@@ -107,7 +109,9 @@
         <div class="row">
 
             <form action="/" method="post" id="formAction">
-                <button type="submit" class="btn btn-primary">กลับหน้าหลัก</button>
+
+                <input type="hidden" id="dataQuantityList" name="dataQuantityList">
+                <button type="submit" class="btn btn-primary" onclick="readDataOrder()">กลับหน้าหลัก</button>
 
             </form>
         </div>
@@ -164,7 +168,7 @@
 
             let qtyList = document.getElementById('qtyList')
             let qtyInt = parseInt(qtyList.value)
-            
+
             if (dataValue < productRemainValue) {
                 dataValue = dataValue + 1
                 data.value = dataValue.toString()
@@ -178,58 +182,88 @@
             let qtyInt = parseInt(qtyList.value)
 
             for (let i = 0; i < qtyInt; i++) {
-             document.getElementById('data' + i).onkeyup = function () { remainCheck(i) }
+                document.getElementById('data' + i).onkeyup = function () { remainCheck(i) }
 
             }
 
         }
 
         function remainCheck(x) {
-                let data = document.getElementById('data' + x)
-                let productRemain = document.getElementById('productRemain' + x)
-                let dataValue = parseInt(data.value)
-                let productRemainValue = parseInt(productRemain.value)
+            let data = document.getElementById('data' + x)
+            let productRemain = document.getElementById('productRemain' + x)
+            let dataValue = parseInt(data.value)
+            let productRemainValue = parseInt(productRemain.value)
 
-                let qtyList = document.getElementById('qtyList')
-                let qtyInt = parseInt(qtyList.value)
+            let qtyList = document.getElementById('qtyList')
+            let qtyInt = parseInt(qtyList.value)
 
-                if (dataValue >= productRemainValue) {
+            if (dataValue >= productRemainValue) {
 
-                    data.value = productRemainValue.toString()
+                data.value = productRemainValue.toString()
 
-                } else if (dataValue > 0 && dataValue < productRemainValue) {
-                    data.value = dataValue.toString()
-                } else if (dataValue <= 0 || typeof(dataValue)!= Number) {
-                    data.value = '1'
-                }
-
-                sumPrice(qtyInt) //หลังจากใส่จำนวนเรียกฟังก์ชัน sumPrice เพื่อรวมราคาใหม่
+            } else if (dataValue > 0 && dataValue < productRemainValue) {
+                data.value = dataValue.toString()
+            } else if (dataValue <= 0 || typeof (dataValue) != Number) {
+                data.value = '1'
             }
-            // ตรวจสอบว่าจำนวนที่สั่งไม่ได้เท่ากับว่าง(ไม่ได้ใส่จำนวนที่สั่ง)
-            function dataEmptyCheck() {
 
-                let qtyList = document.getElementById('qtyList')
-                let qtyInt = parseInt(qtyList.value)
+            sumPrice(qtyInt) //หลังจากใส่จำนวนเรียกฟังก์ชัน sumPrice เพื่อรวมราคาใหม่
+        }
+        // ตรวจสอบว่าจำนวนที่สั่งไม่ได้เท่ากับว่าง(ไม่ได้ใส่จำนวนที่สั่ง)
+        function dataEmptyCheck() {
 
-                for (let i = 0; i < qtyInt; i++) {
-                    document.getElementById('data' + i).onblur = function () { dataEmpty(i) }
+            let qtyList = document.getElementById('qtyList')
+            let qtyInt = parseInt(qtyList.value)
 
-                }
+            for (let i = 0; i < qtyInt; i++) {
+                document.getElementById('data' + i).onblur = function () { dataEmpty(i) }
 
             }
 
-            function dataEmpty(y) {
-                let data = document.getElementById('data' + y)
+        }
 
-                let qtyList = document.getElementById('qtyList')
-                let qtyInt = parseInt(qtyList.value)
+        function dataEmpty(y) {
+            let data = document.getElementById('data' + y)
 
-                if (data.value == '') {
-                    data.value = '1'
+            let qtyList = document.getElementById('qtyList')
+            let qtyInt = parseInt(qtyList.value)
 
-                }
-                sumPrice(qtyInt) //หลังจากใส่จำนวนเรียกฟังก์ชัน sumPrice เพื่อรวมราคาใหม่
+            if (data.value == '') {
+                data.value = '1'
+
             }
+            sumPrice(qtyInt) //หลังจากใส่จำนวนเรียกฟังก์ชัน sumPrice เพื่อรวมราคาใหม่
+        }
+
+        // กดปุ่มลบรายการที่สั่งออกจาก list
+        function deleteItem() {
+
+            let qtyList = document.getElementById('qtyList')
+            let qtyInt = parseInt(qtyList.value)
+
+            for (let i = 0; i < qtyInt; i++) {
+                document.getElementById('delete' + i).onclick = function () { dataDelete(i) }
+
+            }
+
+        }
+
+        function dataDelete(a) {
+
+            let productCode = document.getElementById('productCode' + a)
+            let textDelete = document.getElementById('textDelete' + a)
+
+            let deleteForm = document.getElementById('formDelete')
+
+            if (confirm('คุณต้องการลบรายการนี้หรือไม่') == true) {
+                textDelete.name = 'itemDelete'
+                textDelete.value = 'itemDelete'
+
+                productCode.name = 'itemCode'
+
+                deleteForm.action = '/product-cart'
+            }
+        }
 
         // ตรวจสอบจำนวนรายการที่สั่งซื้อ
 
@@ -245,9 +279,11 @@
                 dataPlusCheck() // onload หน้านี้เสร็จเรียกฟังชั่น
                 dataRemainCheck() // onload หน้านี้เสร็จเรียกฟังชั่น
                 dataEmptyCheck() // onload หน้านี้เสร็จเรียกฟังชั่น
+                deleteItem() // onload หน้านี้เสร็จเรียกฟังชั่น
             }
 
         }
+
 
         // รวมราคาที่สั่งของแต่ละรายการ
 
@@ -266,6 +302,26 @@
             }
 
             grandTotal.innerHTML = sumTotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' บาท'
+        }
+
+        // กดปุ่มกลับหน้าหลัก ให้ทำการอ่านจำนวนที่สั่งของแต่ละรายการ เพื่ออัพเดตข้อมูลใหม่
+        function readDataOrder() {
+
+            let qtyList = document.getElementById('qtyList')
+            let qtyInt = parseInt(qtyList.value)
+            let formAction = document.getElementById('formAction')
+
+            let dataQuantityList = document.getElementById('dataQuantityList')
+            let listQty = ''
+            
+            if (qtyInt > 0) {
+                for (let i = 0; i < qtyInt; i++) {
+                    
+                    listQty = listQty + document.getElementById('productCode' + i).value + ',' + document.getElementById('data' + i).value + ','
+                }
+                dataQuantityList.value = listQty
+            }
+             
         }
 
     </script>
