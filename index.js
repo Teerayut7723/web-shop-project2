@@ -16,6 +16,8 @@ const app = express()
 
 const fs = require('fs')
 const formidable = require('formidable')
+const { request } = require('http')
+const { response } = require('express')
 
 app.set('view engine', 'ejs')
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -47,7 +49,7 @@ app.all('/', (request, response) => {
     }
 
     if (request.session.login) { // อ่านค่าใน session
-        let userName = request.session.firstname
+        let userName = request.session.firstname || ''
         let quantity = request.session.quantity || ''
 
         if (quantity == '') {
@@ -383,9 +385,7 @@ app.all('/product-description', (request, response) => {
                         }
                         listInCart.push(productCode, productName, productDescription, productPrice, qtyBuyProduct, productImage, productRemain)
                         listMainInCart.push(listInCart)
-                        //console.log(listInCart[0], listInCart[1], listInCart[2], listInCart[3], listInCart[4])
-                        //console.log(listMainInCart[0], listMainInCart[1], listMainInCart[2], listMainInCart[3], listMainInCart[4])
-                        //console.log(listMainInCart.length)
+
                         request.session.quantity = listMainInCart.length.toString()
                         request.session.userID = listMainInCart
                         quantity = listMainInCart.length.toString()
@@ -426,9 +426,7 @@ app.all('/product-description', (request, response) => {
                         }
                         listInCart.push(productCode, productName, productDescription, productPrice, qtyBuyProduct, productImage, productRemain)
                         listMainInCart.push(listInCart)
-                        //console.log(listInCart[0], listInCart[1], listInCart[2], listInCart[3], listInCart[4])
-                        //console.log(listMainInCart[0], listMainInCart[1], listMainInCart[2], listMainInCart[3], listMainInCart[4])
-                        //console.log(listMainInCart.length)
+
                         request.session.quantity = listMainInCart.length.toString()
                         request.session.userID = listMainInCart
                         quantity = listMainInCart.length.toString()
@@ -447,11 +445,14 @@ app.all('/product-description', (request, response) => {
 app.all('/product-cart', (request, response) => {
 
 
-    let userName = request.session.firstname
-    let listMainInCart = request.session.userID
+    let userName = request.session.firstname || ''
+    let listMainInCart = request.session.userID || ''
 
     let deleteItem = request.body.itemDelete || ''
     let productCode = request.body.itemCode || ''
+
+    let addressOrder = request.session.addressOrder || [] // เก็บข้อมูลที่อยู่ของ user
+    let checkDataAddress = ''
 
     // กรณีผู้ใช้ยังไม่ได้ทำการ log-in
 
@@ -466,7 +467,14 @@ app.all('/product-cart', (request, response) => {
             }
             request.session.quantity = listMainInCart.length.toString() // update data quantity
         }
-        response.render('products-InCart', { logedIn: false, data: listMainInCart })
+
+        if (addressOrder.length == 0) {
+            checkDataAddress = 'false'
+        } else {
+            checkDataAddress = 'true'
+        }
+        response.render('products-InCart', { dataAddress: checkDataAddress, data: listMainInCart })
+
     } else {
         // กรณีผู้ใช้ยังได้ทำการ log-in แล้ว
 
@@ -483,6 +491,79 @@ app.all('/product-cart', (request, response) => {
     }
 })
 
+// กรอกที่อยู่สำหรับคนที่ไม่ใช่สมาชิก
 
+app.all('/input-address', (request, response) => {
+
+    let listMainInCart = request.session.userID || [] //array เก็บข้อมูลหลัก list รายการและจำนวนสินค้าในรถเข็น
+    let dataQuantityListOrder = request.body.dataQuantityListOrder || '' //รับค่าจำนวนที่สั่งเพื่ออัพเดตใหม่ จากหน้าในรถเข็น
+    if (dataQuantityListOrder != '') {
+
+        let dataListArr = dataQuantityListOrder.split(',')
+        for (i in listMainInCart) {
+            if (listMainInCart[i][0] == dataListArr[0]) { //compare product code ตรงกันใน list หน้ารถเข็น
+
+                listMainInCart[i][4] = dataListArr[1]
+                dataListArr.splice(0, 2)
+            }
+        }
+
+    }
+
+    if (!request.session.login) {
+
+        response.render('input-address')
+
+    }
+})
+
+// หลังจากกรอกที่อยู่สำหรับผู้ที่ไม่ได้เป็นสมาชิก หรือ คนที่เป็นสามาชิกแล้ว
+
+app.all('/order-confirm', (request, response) => {
+
+    let listMainInCart = request.session.userID || ''
+    let addressOrder = request.session.addressOrder || [] // เก็บข้อมูลที่อยู่ของ user
+
+    let firstname = request.body.firstname || ''
+    let lastname = request.body.lastname || ''
+    let phoneNumber = request.body.phoneNumber || ''
+    let address = request.body.address || ''
+    let city = request.body.city || ''
+    let province = request.body.province || ''
+    let zipcode = request.body.zipcode || ''
+
+
+    //สำหรับคนที่ไม่ได้เป็นสมาชิก
+    if (!request.session.login) {
+
+        if (!request.body.firstname) {
+            response.render('input-address')
+        } else {
+            if (addressOrder.length == 0) {
+                addressOrder.push(firstname, lastname, phoneNumber, address, city, province, zipcode)
+                request.session.addressOrder = addressOrder
+
+            } else { //ถ้ามีการแก้ไขข้อมูลที่อยู่
+
+                addressOrder = [] // clear data
+                addressOrder.push(firstname, lastname, phoneNumber, address, city, province, zipcode)
+                request.session.addressOrder = addressOrder
+            }
+            response.render('order-confirm', { data: listMainInCart, dataAddress: addressOrder })
+        }
+    }
+})
+
+// แก้ไขข้อมูลที่อยู่การจัดส่ง
+
+app.all('/edit-address', (request, response) => {
+
+    let addressOrder = request.session.addressOrder || [] // เก็บข้อมูลที่อยู่ของ user
+
+
+    response.render('edit-address', { dataAddress: addressOrder })
+
+
+})
 
 app.listen(port, () => console.log('Server started on port: 3000'))

@@ -35,6 +35,7 @@
                             <!--separate for each image name-->
 
                             <% let imgs=d.images.split(',') %>
+
                                 <div class="carousel-item active">
                                     <img src="/product-images/<%= imgs[0] %>" class="d-block w-100" alt="Image">
                                 </div>
@@ -102,7 +103,7 @@
                                                     <button type="button" id="minus" onclick="dataMinus()"
                                                         style="background-color: rgb(184, 231, 250); width: 35px; height: 35px;"
                                                         onmousedown="this.style.background='orange'"
-                                                        onmouseup="this.style.background='rgb(184, 231, 250)'">- 
+                                                        onmouseup="this.style.background='rgb(184, 231, 250)'">-
                                                     </button>
 
                                                     <input type="text" id="data" name="qtyBuyProduct" value="1"
@@ -112,14 +113,15 @@
                                                     <button type="button" id="plus" onclick="dataPlus()"
                                                         style="background-color: rgb(184, 231, 250); width: 35px; height: 35px;"
                                                         onmousedown="this.style.background='orange'"
-                                                        onmouseup="this.style.background='rgb(184, 231, 250)'">+ 
+                                                        onmouseup="this.style.background='rgb(184, 231, 250)'">+
                                                     </button>
                                                 </span>
 
                                                 <div class="pt-2">คลัง: <%= d.productRemain %> ชิ้น</div>
 
                                                 <div id="priceTotal" name="priceTotal"
-                                                    style="color: blue; margin-left: 10px; margin-top: 5px; font-size: 20px;"></div>
+                                                    style="color: blue; margin-left: 10px; margin-top: 5px; font-size: 20px;">
+                                                </div>
 
                                                 <input type="hidden" id="productRemain" name="productRemain"
                                                     value="<%= d.productRemain %>">
@@ -199,7 +201,7 @@
 
                 } else if (dataValue > 0 && dataValue < productRemainValue) {
                     data.value = dataValue.toString()
-                } else if (dataValue <= 0 || typeof(dataValue)!= Number) {
+                } else if (dataValue <= 0 || typeof (dataValue) != Number) {
                     data.value = '1'
                 }
             }

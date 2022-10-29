@@ -27,8 +27,8 @@
             <table class="table" style="width: 100%">
                 <thead class="table-primary">
                     <tr>
-                        <th scope="col"><input type="checkbox" name="allSelect" value="allSelect"
-                                style="height: 20px; width: 20px;"> สินค้า</th>
+                        <th scope="col"><input type="checkbox" id="allSelect" name="allSelect" value="allSelect" checked
+                                style="height: 20px; width: 20px;" onchange="selectAll()"> สินค้า</th>
                         <th scope="col" style="width: 70px;">ราคาต่อหน่วย</th>
                         <th scope="col" style="width: 200px;">จำนวน</th>
                         <th scope="col" style="width: 77px">ราคารวม</th>
@@ -38,14 +38,15 @@
                 <tbody>
                     <% let list=data; let idMinus='' ; let idData='' ; let idPlus='' ; let idPrice='' ; let
                         idPriceTotal='' ; let idProductRemain='' ; let idDelete='' ; let idProductCode='' ; let
-                        idTextDelete='' ; if (list !=undefined) { let item=list.length; } %>
+                        idTextDelete='' ; let idCheckBox='' ; if (list !=undefined) { let item=list.length; } %>
                         <% for ( i in list ) { idMinus='minus' + i; idData='data' + i; idPlus='plus' + i;
                             idPrice='price' + i; idPriceTotal='priceTotal' + i; idProductRemain='productRemain' + i;
-                            idDelete='delete' + i; idProductCode='productCode' + i; idTextDelete='textDelete' + i; %>
+                            idDelete='delete' + i; idProductCode='productCode' + i; idTextDelete='textDelete' + i;
+                            idCheckBox='item' + i; %>
                             <tr>
                                 <td scope="row">
-                                    <div><input type="checkbox" name="item1" value="item1"
-                                            style="height: 20px; width: 20px;">
+                                    <div><input type="checkbox" id="<%= idCheckBox %>" value="<%= list[i][0] %>"
+                                            style="height: 20px; width: 20px;" onchange="chooseItem()">
                                         <img src="product-images/<%= list[i][5] %>" alt="Images"
                                             style="height: 77px; width: 77px; margin-left: 5px; text-align: center; margin-right: 25px;">
                                         <%= list[i][1] %>
@@ -106,19 +107,54 @@
             </table>
         </div>
 
-        <div class="row">
+        <div class="d-flex justify-content-between">
+            
+                <form action="/" method="post" id="formAction">
 
-            <form action="/" method="post" id="formAction">
+                    <input type="hidden" id="dataQuantityList" name="dataQuantityList">
+                    <button type="submit" class="btn btn-primary" onclick="readDataOrder()">กลับหน้าหลัก</button>
 
-                <input type="hidden" id="dataQuantityList" name="dataQuantityList">
-                <button type="submit" class="btn btn-primary" onclick="readDataOrder()">กลับหน้าหลัก</button>
+                </form>
+                
+                <form action="" method="post" id="formOrder">
 
-            </form>
+                    <input type="hidden" id="dataQuantityListOrder" name="dataQuantityListOrder">
+                    <input type="hidden" id="dataAddress" value="<%= dataAddress %>">
+                    <button type="submit" class="btn btn-primary px-5" onclick="order()">สั่งสินค้า</button>
+
+                </form>
         </div>
 
     </div>
 
     <script>
+        // กดปุ่มสั่งสินค้า
+
+        function order() {
+
+            let dataAddress = document.getElementById('dataAddress')
+            let formOrder = document.getElementById('formOrder')
+
+            let qtyList = document.getElementById('qtyList')
+            let qtyInt = parseInt(qtyList.value)
+
+            let dataQuantityListOrder = document.getElementById('dataQuantityListOrder')
+            let listQty = ''
+
+            if (qtyInt > 0) {
+                for (let i = 0; i < qtyInt; i++) {
+
+                    listQty = listQty + document.getElementById('productCode' + i).value + ',' + document.getElementById('data' + i).value + ','
+                }
+                dataQuantityListOrder.value = listQty
+            }
+            
+            if (dataAddress.value == 'false') {
+                formOrder.action = '/input-address'
+            } else {
+                formOrder.action = '/order-confirm'
+            }
+        }
         // กดปุ่มลบจำนวนที่สั่ง
         function dataMinusCheck() {
 
@@ -265,6 +301,47 @@
             }
         }
 
+        // เลือก checkbox รายการทั้งหมด
+
+        function selectAll() {
+
+            let qtyList = document.getElementById('qtyList')
+            let qtyInt = parseInt(qtyList.value)
+            let allSelect = document.getElementById('allSelect')
+
+            for (let i = 0; i < qtyInt; i++) {
+                if (allSelect.checked) {
+                    document.getElementById('item' + i).checked = true
+                } else {
+                    document.getElementById('item' + i).checked = false
+                }
+            }
+            sumPrice(qtyInt)
+        }
+
+        // เลือก checkbox แต่ละรายการ เพื่อรวมราคาใหม่
+
+        function chooseItem() {
+
+            let qtyList = document.getElementById('qtyList')
+            let qtyInt = parseInt(qtyList.value)
+            let countSelectItem = 0
+
+            for (let i = 0; i < qtyInt; i++) {
+
+                if (document.getElementById('item' + i).checked) {
+                    countSelectItem += 1
+                }
+            }
+
+            if (countSelectItem == qtyInt) {
+                document.getElementById('allSelect').checked = true
+            } else {
+                document.getElementById('allSelect').checked = false
+            }
+            sumPrice(qtyInt)
+        }
+
         // ตรวจสอบจำนวนรายการที่สั่งซื้อ
 
         function checkListItem() {
@@ -280,6 +357,7 @@
                 dataRemainCheck() // onload หน้านี้เสร็จเรียกฟังชั่น
                 dataEmptyCheck() // onload หน้านี้เสร็จเรียกฟังชั่น
                 deleteItem() // onload หน้านี้เสร็จเรียกฟังชั่น
+                selectAll() // onload หน้านี้เสร็จเรียกฟังชั่น
             }
 
         }
@@ -291,14 +369,15 @@
             let sumPrice = 0
             let priceTotal = ''
             let sumTotal = 0
-            let grandTotal = document.getElementById('grandTotal')
+            let grandTotal = document.getElementById('grandTotal')         
 
             for (let i = 0; i < qtyInt; i++) {
-
-                priceTotal = document.getElementById('priceTotal' + i)
-                sumPrice = parseInt(document.getElementById('price' + i).innerHTML) * parseInt(document.getElementById('data' + i).value) //นำราคาต่อหน่วยคูณกับจำนวนชิ้น
-                priceTotal.innerHTML = sumPrice.toString().toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' บาท'
-                sumTotal = sumTotal + sumPrice
+                if (document.getElementById('item' + i).checked) {
+                    priceTotal = document.getElementById('priceTotal' + i)
+                    sumPrice = parseInt(document.getElementById('price' + i).innerHTML) * parseInt(document.getElementById('data' + i).value) //นำราคาต่อหน่วยคูณกับจำนวนชิ้น
+                    priceTotal.innerHTML = sumPrice.toString().toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' บาท'
+                    sumTotal = sumTotal + sumPrice
+                }
             }
 
             grandTotal.innerHTML = sumTotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' บาท'
@@ -313,15 +392,15 @@
 
             let dataQuantityList = document.getElementById('dataQuantityList')
             let listQty = ''
-            
+
             if (qtyInt > 0) {
                 for (let i = 0; i < qtyInt; i++) {
-                    
+
                     listQty = listQty + document.getElementById('productCode' + i).value + ',' + document.getElementById('data' + i).value + ','
                 }
                 dataQuantityList.value = listQty
             }
-             
+
         }
 
     </script>
