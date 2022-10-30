@@ -7,10 +7,10 @@ const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
 //ใช้กับ online
-//const port = process.env.PORT
+const port = process.env.PORT
 
 //ใช้กับ localhost
-const port = 3000
+//const port = 3000
 //const customer = require('./customer')
 const app = express()
 
@@ -35,6 +35,9 @@ app.all('/', (request, response) => {
 
     let listMainInCart = request.session.userID || [] //array เก็บข้อมูลหลัก list รายการและจำนวนสินค้าในรถเข็น
     let dataQuantityList = request.body.dataQuantityList || '' //รับค่าจำนวนที่สั่งเพื่ออัพเดตใหม่ จากหน้าในรถเข็น
+
+    request.session.itemOrder = [] // clear data ใน session เมื่อกดกลับมาที่หน้านี้
+ 
     if (dataQuantityList != '') {
 
         let dataListArr = dataQuantityList.split(',')
@@ -454,6 +457,8 @@ app.all('/product-cart', (request, response) => {
     let addressOrder = request.session.addressOrder || [] // เก็บข้อมูลที่อยู่ของ user
     let checkDataAddress = ''
 
+    request.session.itemOrder = [] // clear data ใน session เมื่อกดกลับมาที่หน้านี้
+
     // กรณีผู้ใช้ยังไม่ได้ทำการ log-in
 
     if (!request.session.login) {
@@ -476,7 +481,7 @@ app.all('/product-cart', (request, response) => {
         response.render('products-InCart', { dataAddress: checkDataAddress, data: listMainInCart })
 
     } else {
-        // กรณีผู้ใช้ยังได้ทำการ log-in แล้ว
+        // กรณีผู้ใช้ได้ทำการ log-in แล้ว
 
         //ถ้าเข้ามาแบบ log-in แล้วและ ทำการลบข้อมูลใน list
         if (deleteItem == 'itemDelete') {
@@ -497,6 +502,10 @@ app.all('/input-address', (request, response) => {
 
     let listMainInCart = request.session.userID || [] //array เก็บข้อมูลหลัก list รายการและจำนวนสินค้าในรถเข็น
     let dataQuantityListOrder = request.body.dataQuantityListOrder || '' //รับค่าจำนวนที่สั่งเพื่ออัพเดตใหม่ จากหน้าในรถเข็น
+
+    let chooseItemOrder = request.body.chooseItemOrder || '' //รับค่าการเลือกรายการที่จะสั่งจาก check box ในรถเข็น
+    let listItemOder = request.session.itemOrder || [] // อ่านค่าใน session ว่ามีรายการที่จะสั่งอะไรบ้าง หลังจาก เลือก check box ในรถเข็น
+
     if (dataQuantityListOrder != '') {
 
         let dataListArr = dataQuantityListOrder.split(',')
@@ -508,6 +517,20 @@ app.all('/input-address', (request, response) => {
             }
         }
 
+    }
+     // สร้าง list ขึ้นใหม่จากการที่ผู้ใช้เลือกบางรายการจาก รายกายในรถเข็น ผ่าน checkbox
+    if (chooseItemOrder != '') {
+
+        let dataListOrder = chooseItemOrder.split(',')
+        for (c in listMainInCart) {
+            if (listMainInCart[c].includes(dataListOrder[0])) {
+
+                listItemOder.push(listMainInCart[c])
+                dataListOrder.splice(0,1)
+            }
+        }
+        
+        request.session.itemOrder = listItemOder
     }
 
     if (!request.session.login) {
@@ -521,8 +544,8 @@ app.all('/input-address', (request, response) => {
 
 app.all('/order-confirm', (request, response) => {
 
-    let listMainInCart = request.session.userID || ''
     let addressOrder = request.session.addressOrder || [] // เก็บข้อมูลที่อยู่ของ user
+    let editAddress = request.body.editAddress || ''
 
     let firstname = request.body.firstname || ''
     let lastname = request.body.lastname || ''
@@ -532,24 +555,56 @@ app.all('/order-confirm', (request, response) => {
     let province = request.body.province || ''
     let zipcode = request.body.zipcode || ''
 
+    let listMainInCart = request.session.userID || [] //array เก็บข้อมูลหลัก list รายการและจำนวนสินค้าในรถเข็น
+    let dataQuantityListOrder = request.body.dataQuantityListOrder || '' //รับค่าจำนวนที่สั่งเพื่ออัพเดตใหม่ จากหน้าในรถเข็น
+
+    let chooseItemOrder = request.body.chooseItemOrder || '' //รับค่าการเลือกรายการที่จะสั่งจาก check box ในรถเข็น
+    let listItemOder = request.session.itemOrder || [] // อ่านค่าใน session ว่ามีรายการที่จะสั่งอะไรบ้าง หลังจาก เลือก check box ในรถเข็น
+
+    if (dataQuantityListOrder != '') {
+
+        let dataListArr = dataQuantityListOrder.split(',')
+        for (i in listMainInCart) {
+            if (listMainInCart[i][0] == dataListArr[0]) { //compare product code ตรงกันใน list หน้ารถเข็น
+
+                listMainInCart[i][4] = dataListArr[1]
+                dataListArr.splice(0, 2)
+            }
+        }
+
+    }
+
+    // สร้าง list ขึ้นใหม่จากการที่ผู้ใช้เลือกบางรายการจาก รายกายในรถเข็น ผ่าน checkbox
+    if (chooseItemOrder != '') {
+
+        let dataListOrder = chooseItemOrder.split(',')
+        for (c in listMainInCart) {
+            if (listMainInCart[c].includes(dataListOrder[0])) {
+
+                listItemOder.push(listMainInCart[c])
+                dataListOrder.splice(0,1)
+            }
+        }
+        request.session.itemOrder = listItemOder
+    }
 
     //สำหรับคนที่ไม่ได้เป็นสมาชิก
     if (!request.session.login) {
 
-        if (!request.body.firstname) {
+        if (!request.body.firstname && !request.session.addressOrder) {
             response.render('input-address')
         } else {
             if (addressOrder.length == 0) {
                 addressOrder.push(firstname, lastname, phoneNumber, address, city, province, zipcode)
                 request.session.addressOrder = addressOrder
 
-            } else { //ถ้ามีการแก้ไขข้อมูลที่อยู่
+            } else if (editAddress == 'editAddress') { //ถ้ามีการแก้ไขข้อมูลที่อยู่
 
                 addressOrder = [] // clear data
                 addressOrder.push(firstname, lastname, phoneNumber, address, city, province, zipcode)
                 request.session.addressOrder = addressOrder
             }
-            response.render('order-confirm', { data: listMainInCart, dataAddress: addressOrder })
+            response.render('order-confirm', { data: listItemOder, dataAddress: addressOrder })
         }
     }
 })
