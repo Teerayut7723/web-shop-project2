@@ -7,10 +7,10 @@ const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
 //ใช้กับ online
-const port = process.env.PORT
+//const port = process.env.PORT
 
 //ใช้กับ localhost
-//const port = 3000
+const port = 3000
 //const customer = require('./customer')
 const app = express()
 
@@ -37,7 +37,7 @@ app.all('/', (request, response) => {
     let dataQuantityList = request.body.dataQuantityList || '' //รับค่าจำนวนที่สั่งเพื่ออัพเดตใหม่ จากหน้าในรถเข็น
 
     request.session.itemOrder = [] // clear data ใน session เมื่อกดกลับมาที่หน้านี้
- 
+
     if (dataQuantityList != '') {
 
         let dataListArr = dataQuantityList.split(',')
@@ -87,7 +87,7 @@ app.all('/signin', (request, response) => {
         let data = {
             firstname: form.firstname || '',
             lastname: form.lastname || '',
-            email: form.email || '',
+            email: form.email.toLowerCase() || '',
             password: form.password || '',
             password2: form.password2 || '',
             phoneNumber: form.phoneNumber || '',
@@ -101,14 +101,14 @@ app.all('/signin', (request, response) => {
         let emailDataBase = ''
         Customer
             .find().select('email')
-            .where('email').equals(email)
+            .where('email').equals(email.toLowerCase())
             .exec((err, docs) => {
                 if (!err) {
                     for (d of docs) {
                         emailDataBase = d.email
                         //console.log(emailDataBase, email)
                     }
-                    if (emailDataBase == email) {
+                    if (emailDataBase == email.toLowerCase()) {
                         response.render('signin', { result: 'A' }) // A แทน result ถ้า email ซ้ำ
                     } else {
                         Customer.create(data, err => {
@@ -156,8 +156,8 @@ app.all('/login', (request, response) => {
         // อ่านข้อมูลจาก database ชื่อ และ password
 
         Customer
-            .find().select('email password firstname')
-            .where('email').equals(login)
+            .find().select('email password firstname lastname phoneNumber address city province zipcode') //addressOrder array pattern=(firstname, lastname, phoneNumber, address, city, province, zipcode)
+            .where('email').equals(login.toLowerCase())
             .exec((err, docs) => {
                 if (!err) {
                     for (d of docs) {
@@ -165,39 +165,52 @@ app.all('/login', (request, response) => {
                         email = d.email
                         passwordCheck = d.password
                         firstname = d.firstname
-                        //console.log(email, passwordCheck, firstname)
+                        lastname = d.lastname
+                        phoneNumber = d.phoneNumber
+                        address = d.address
+                        city = d.city
+                        province = d.province
+                        zipcode = d.zipcode
+                        //console.log(email, passwordCheck, firstname, lastname, phoneNumber, address, city, province, zipcode)
+                    }
 
+                    //ถ้าใส่ข้อมูลถูกต้อง
 
-                        //ถ้าใส่ข้อมูลถูกต้อง
+                    if (login.toLowerCase() == email.toLowerCase() && password == passwordCheck) {
 
-                        if (login == email && password == passwordCheck) {
-                            //ถ้าเลือกให้จัดเก็บข้อมูลไว้ในเครื่อง ก็บันทึกเป็นคุกกี้
-                            if (request.body.save) {
-                                let age = 30 * 60 * 1000
-                                response.cookie('login', login, { maxAge: age })
-                                response.cookie('password', password, { maxAge: age })
-                                response.cookie('save', saveCookie, { maxAge: age })
-
-                                //ถ้าไม่เลือกเก็บในเครื่อง แต่อาจมีคุกกี้เดิมเก็บไว้ ก็ให้ลบทิ้งไป
-                            } else {
-                                response.clearCookie('login')
-                                response.clearCookie('password')
-                                response.clearCookie('save')
-                            }
-
-                            //จัดเก็บข้อมูล login ไว้ในเซสชัน เพื่อใช้ตรวจสอบในภายหลัง
-                            request.session.login = login
-                            request.session.firstname = firstname
-                            logedIn = true
-                            valid = true
+                        //ถ้าเลือกให้จัดเก็บข้อมูลไว้ในเครื่อง ก็บันทึกเป็นคุกกี้
+                        if (request.body.save) {
+                            let age = 30 * 60 * 1000
+                            response.cookie('login', login, { maxAge: age })
+                            response.cookie('password', password, { maxAge: age })
+                            response.cookie('save', saveCookie, { maxAge: age })
+                            
+                            //request.session.cookie.maxAge = age
+                            
+                            //ถ้าไม่เลือกเก็บในเครื่อง แต่อาจมีคุกกี้เดิมเก็บไว้ ก็ให้ลบทิ้งไป
                         } else {
-                            password = ''
+                            response.clearCookie('login')
+                            response.clearCookie('password')
+                            response.clearCookie('save')
                         }
 
-                        response.render('login',
-                            { login: firstname, password: password, save: saveCookie, logedIn: logedIn, valid: valid })
-
+                        //จัดเก็บข้อมูล login ไว้ในเซสชัน เพื่อใช้ตรวจสอบในภายหลัง
+                        request.session.addressOrder = [firstname, lastname, phoneNumber, address, city, province, zipcode] //ถ้า log in แล้ว อ่านที่อยู่ส่งสินค้าเก็บใน session
+                        request.session.login = login
+                        request.session.firstname = firstname
+                        logedIn = true
+                        valid = true
+                    } else {
+                        logedIn = false
+                        valid = false
+                        firstname = ''
+                        password = ''
                     }
+
+                    response.render('login',
+                        { login: firstname, password: password, save: saveCookie, logedIn: logedIn, valid: valid })
+
+
                 }
             })
     }
@@ -492,7 +505,13 @@ app.all('/product-cart', (request, response) => {
             }
             request.session.quantity = listMainInCart.length.toString() // update data quantity
         }
-        response.render('products-InCart', { logedIn: true, user: userName, data: listMainInCart })
+
+        if (addressOrder.length == 0) {
+            checkDataAddress = 'false'
+        } else {
+            checkDataAddress = 'true'
+        }
+        response.render('products-InCart', { logedIn: true, user: userName, dataAddress: checkDataAddress, data: listMainInCart })
     }
 })
 
@@ -518,7 +537,7 @@ app.all('/input-address', (request, response) => {
         }
 
     }
-     // สร้าง list ขึ้นใหม่จากการที่ผู้ใช้เลือกบางรายการจาก รายกายในรถเข็น ผ่าน checkbox
+    // สร้าง list ขึ้นใหม่จากการที่ผู้ใช้เลือกบางรายการจาก รายกายในรถเข็น ผ่าน checkbox
     if (chooseItemOrder != '') {
 
         let dataListOrder = chooseItemOrder.split(',')
@@ -526,10 +545,10 @@ app.all('/input-address', (request, response) => {
             if (listMainInCart[c].includes(dataListOrder[0])) {
 
                 listItemOder.push(listMainInCart[c])
-                dataListOrder.splice(0,1)
+                dataListOrder.splice(0, 1)
             }
         }
-        
+
         request.session.itemOrder = listItemOder
     }
 
@@ -582,7 +601,7 @@ app.all('/order-confirm', (request, response) => {
             if (listMainInCart[c].includes(dataListOrder[0])) {
 
                 listItemOder.push(listMainInCart[c])
-                dataListOrder.splice(0,1)
+                dataListOrder.splice(0, 1)
             }
         }
         request.session.itemOrder = listItemOder
@@ -606,6 +625,16 @@ app.all('/order-confirm', (request, response) => {
             }
             response.render('order-confirm', { data: listItemOder, dataAddress: addressOrder })
         }
+    }
+    //สำหรับคนที่เป็นสมาชิกและ log in แล้ว 
+    else {
+        if (editAddress == 'editAddress') { //ถ้ามีการแก้ไขข้อมูลที่อยู่
+
+            addressOrder = [] // clear data
+            addressOrder.push(firstname, lastname, phoneNumber, address, city, province, zipcode)
+            request.session.addressOrder = addressOrder
+        }
+        response.render('order-confirm', { data: listItemOder, dataAddress: addressOrder })
     }
 })
 
