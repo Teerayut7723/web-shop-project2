@@ -147,6 +147,22 @@
 
         }
 
+        // Check grand total price before order
+
+        function confirmOrder() {
+
+            let grandPriceOrder = document.getElementById('grandPriceOrder')
+            let formOrder = document.getElementById('formOrder')
+            
+            if (grandPriceOrder.value == '0') {
+
+                alert('คุณยังไม่ได้เลือกสินค้า')
+            } else {
+
+                formOrder.action = '/buy-products'
+            }
+        }
+
     </script>
 
 

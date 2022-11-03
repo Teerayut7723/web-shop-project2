@@ -185,7 +185,7 @@ app.all('/login', (request, response) => {
                             response.cookie('password', password, { maxAge: age })
                             response.cookie('save', saveCookie, { maxAge: age })
                             
-                            //request.session.cookie.maxAge = age
+                            request.session.cookie.maxAge = age //กำหนดอายุของ session
                             
                             //ถ้าไม่เลือกเก็บในเครื่อง แต่อาจมีคุกกี้เดิมเก็บไว้ ก็ให้ลบทิ้งไป
                         } else {
@@ -646,6 +646,19 @@ app.all('/edit-address', (request, response) => {
 
 
     response.render('edit-address', { dataAddress: addressOrder })
+
+
+})
+
+// ยืนยันการสั่งสินค้า เลือกวิธีชำระเงิน อัพโหลดสลิป
+
+app.all('/buy-products', (request, response) => {
+
+    let addressOrder = request.session.addressOrder || [] // เก็บข้อมูลที่อยู่ของ user
+    let grandPriceOrder = request.body.grandPriceOrder || '' /รับค่าราคาทั้งหมดที่ทำการสั่งซื้อ
+
+
+    response.render('buy-products', { dataAddress: addressOrder })
 
 
 })
