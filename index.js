@@ -462,7 +462,7 @@ app.all('/product-cart', (request, response) => {
 
 
     let userName = request.session.firstname || ''
-    let listMainInCart = request.session.userID || ''
+    let listMainInCart = request.session.userID || []
 
     let deleteItem = request.body.itemDelete || ''
     let productCode = request.body.itemCode || ''
@@ -595,7 +595,7 @@ app.all('/order-confirm', (request, response) => {
 
     // สร้าง list ขึ้นใหม่จากการที่ผู้ใช้เลือกบางรายการจาก รายกายในรถเข็น ผ่าน checkbox
     if (chooseItemOrder != '') {
-
+        listItemOder = []
         let dataListOrder = chooseItemOrder.split(',')
         for (c in listMainInCart) {
             if (listMainInCart[c].includes(dataListOrder[0])) {

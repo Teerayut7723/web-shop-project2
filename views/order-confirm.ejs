@@ -7,11 +7,10 @@
     <title>สั่งซื้อสินค้า</title>
 
 
-    <!-- add icon link -->
-    <link rel="icon" href="images/LogoMakr-18GTI0.png" type="image/x-icon">
+    <!-- insert layout/commonHead.ejs file-->
+    <%- include('layouts/commonHead') %>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
+
 </head>
 
 <body onload="checkListItem()">
@@ -30,12 +29,38 @@
             <div>ที่อยู่ <%= dataAddress[3] %> อำเภอ <%= dataAddress[4] %> จังหวัด <%= dataAddress[5] %>
                             <%= dataAddress[6] %>
             </div>
-            <div>เบอร์โทรศัพท์: <%= dataAddress[2] %></div>
+            <div>เบอร์โทรศัพท์: <%= dataAddress[2] %>
+            </div>
             <div>
                 <form action="/edit-address" method="post">
                     <button type="submit" class="btn btn-primary my-2">แก้ไขที่อยู่</button>
                 </form>
             </div>
+        </div>
+        <hr>
+        <!-- Pay method-->
+        <div>
+            <h4>เลือกวิธีชำระเงิน:</h4>
+            <div><input type="checkbox" id="cashOnDelivery" name="cashOnDelivery" value="cashOnDelivery"
+                    style="width: 15px; height: 15px; margin-bottom: 20px;">&nbsp; เก็บเงินปลายทาง </div>
+            <div><input type="checkbox" id="mobileBanking" name="mobileBanking" value="mobileBanking"
+                    style="width: 15px; height: 15px;">&nbsp; ชำระผ่านบัญชีธนาคาร </div>
+            <div>
+                <div>ธนาคารไทยพานิชย์ เลขที่บัญชี </div><span style="color: blue; font-weight: bold;">123456789
+                    <input type="hidden" id="bankNumber" value="123456789">
+                    <button type="button" class="btn btn-outline-primary mx-2 w-15" data-bs-toggle="tooltip"
+                        data-bs-placement="top" data-bs-title="Copy" onclick="copyBankID()" id="btnCopy"
+                        onblur="textCopy()">Copy</button></span>
+            </div>
+
+        </div>
+        <hr>
+        <!--Transport cost-->
+        <div>
+            <h4>ค่าจัดส่งพัสดุ:</h4>
+            <div>Standard Delivery - ส่งธรรมดาในประเทศ</div>
+            <span>ราคา </span><span id="transportPrice">50</span><span> บาท</span>
+            <div id="receiveDate" style="color: grey; font-size: small; ">-</div>
         </div>
         <hr>
         <div class="table-responsive-sm">
@@ -85,6 +110,11 @@
                 <tfoot class="table-primary">
                     <tr>
                         <td scope="row"></td>
+                        <td colspan="2">ค่าจัดส่งพัสดุ</td>
+                        <td colspan="2" id="trasportCost">-</td>
+                    </tr>
+                    <tr>
+                        <td scope="row"></td>
                         <td colspan="2">ราคารวมทั้งหมด</td>
                         <td colspan="2" id="grandTotal">-</td>
 
@@ -122,6 +152,21 @@
             if (qtyInt > 0) {
                 sumPrice(qtyInt)
 
+                // Date receive product
+                let receiveDate = document.getElementById('receiveDate')
+                const day1 = new Date()
+                const day2 = new Date()
+
+                day1.setDate(day1.getDate() + 3) // 3-5 days arival to customer
+                day2.setDate(day2.getDate() + 5)
+
+                // Month receive product
+                const months = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."]
+                let month1 = months[day1.getMonth()]
+                let month2 = months[day2.getMonth()]
+
+                receiveDate.innerHTML = 'จะได้รับในวันที่ ' + day1.getDate() + ' ' + month1 + ' ถึง ' + day2.getDate() + ' ' + month2
+
             }
 
         }
@@ -135,6 +180,12 @@
             let grandTotal = document.getElementById('grandTotal')
             let grandPriceOrder = document.getElementById('grandPriceOrder')
 
+            let transportPrice = document.getElementById('transportPrice')
+            let transportPriceInt = parseInt(transportPrice.innerHTML)
+            let transportCost = document.getElementById('transportCost')
+            
+            trasportCost.innerHTML = transportPrice.innerHTML.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' บาท'
+
             for (let i = 0; i < qtyInt; i++) {
 
                 priceTotal = document.getElementById('priceTotal' + i)
@@ -142,6 +193,7 @@
                 priceTotal.innerHTML = sumPrice.toString().toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' บาท'
                 sumTotal = sumTotal + sumPrice
             }
+            sumTotal = sumTotal + transportPriceInt
             grandPriceOrder.value = sumTotal.toString()
             grandTotal.innerHTML = sumTotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' บาท'
 
@@ -153,7 +205,7 @@
 
             let grandPriceOrder = document.getElementById('grandPriceOrder')
             let formOrder = document.getElementById('formOrder')
-            
+
             if (grandPriceOrder.value == '0') {
 
                 alert('คุณยังไม่ได้เลือกสินค้า')
@@ -163,12 +215,40 @@
             }
         }
 
+        // Copy bank number
+
+        function copyBankID() {
+
+            let bankNumber = document.getElementById("bankNumber")
+            let btnCopy = document.getElementById('btnCopy')
+
+            bankNumber.select()
+            //bankNumber.setSelectionRange(0, 99999); // For mobile devices
+
+            navigator.clipboard.writeText(bankNumber.value)
+
+            btnCopy.innerHTML = 'Copied'
+
+        }
+
+        // lose focus on button copy
+
+        function textCopy() {
+
+            let btnCopy = document.getElementById('btnCopy')
+
+            btnCopy.innerHTML = 'Copy'
+        }
+
+
+
     </script>
 
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa"
-        crossorigin="anonymous"></script>
+    <!-- insert layout/commonBody.ejs file-->
+    <%- include('layouts/commonBody') %>
+
+</body>
 
 </body>
 
