@@ -42,15 +42,18 @@
         <div>
             <h4>เลือกวิธีชำระเงิน:</h4>
             <div><input type="checkbox" id="cashOnDelivery" name="cashOnDelivery" value="cashOnDelivery"
-                    style="width: 15px; height: 15px; margin-bottom: 20px;">&nbsp; เก็บเงินปลายทาง </div>
-            <div><input type="checkbox" id="mobileBanking" name="mobileBanking" value="mobileBanking"
-                    style="width: 15px; height: 15px;">&nbsp; ชำระผ่านบัญชีธนาคาร </div>
+                    style="width: 15px; height: 15px; margin-bottom: 20px;" onchange="cashWayselect1()">&nbsp;
+                เก็บเงินปลายทาง </div>
+            <div><input type="checkbox" id="banking" name="banking" value="mobileBanking"
+                    style="width: 15px; height: 15px;" onchange="cashWayselect2()" checked>&nbsp; ชำระผ่านบัญชีธนาคาร
+            </div>
             <div>
                 <div>ธนาคารไทยพานิชย์ เลขที่บัญชี </div><span style="color: blue; font-weight: bold;">123456789
                     <input type="hidden" id="bankNumber" value="123456789">
                     <button type="button" class="btn btn-outline-primary mx-2 w-15" data-bs-toggle="tooltip"
                         data-bs-placement="top" data-bs-title="Copy" onclick="copyBankID()" id="btnCopy"
                         onblur="textCopy()">Copy</button></span>
+
             </div>
 
         </div>
@@ -130,9 +133,9 @@
                 <button type="submit" class="btn btn-primary">กลับหน้าหลัก</button>
 
             </form>
-
             <form action="" method="post" id="formOrder">
 
+                <input type="hidden" id="cashMethod" name="cashMethod" value="banking">
                 <input type="hidden" id="grandPriceOrder" name="grandPriceOrder">
                 <button type="submit" class="btn btn-primary px-3" onclick="confirmOrder()">ยืนยันสั่งสินค้า</button>
 
@@ -183,7 +186,7 @@
             let transportPrice = document.getElementById('transportPrice')
             let transportPriceInt = parseInt(transportPrice.innerHTML)
             let transportCost = document.getElementById('transportCost')
-            
+
             trasportCost.innerHTML = transportPrice.innerHTML.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' บาท'
 
             for (let i = 0; i < qtyInt; i++) {
@@ -203,13 +206,14 @@
 
         function confirmOrder() {
 
-            let grandPriceOrder = document.getElementById('grandPriceOrder')
+            let grandTotal = document.getElementById('grandTotal')
             let formOrder = document.getElementById('formOrder')
+            let banking = document.getElementById('banking')
 
-            if (grandPriceOrder.value == '0') {
+            if (grandTotal.innerHTML == '-') {
 
                 alert('คุณยังไม่ได้เลือกสินค้า')
-            } else {
+            } else if (banking.checked == true) {
 
                 formOrder.action = '/buy-products'
             }
@@ -238,17 +242,48 @@
             let btnCopy = document.getElementById('btnCopy')
 
             btnCopy.innerHTML = 'Copy'
+
         }
 
+        // Cash way select on cash deleverly
 
+        function cashWayselect1() {
 
+            let cashOnDelivery = document.getElementById('cashOnDelivery')
+            let banking = document.getElementById('banking')
+            let cashMethod = document.getElementById('cashMethod')
+            
+            if (cashOnDelivery.checked == true) {
+                banking.checked = false
+                cashMethod.value = 'cashOnDelivery'
+            } else {
+                cashMethod.value = '' // clear data
+            }
+         
+        }
+
+        // Cash way select on cash banking
+
+        function cashWayselect2() {
+
+            let cashOnDelivery = document.getElementById('cashOnDelivery')
+            let banking = document.getElementById('banking')
+            let cashMethod = document.getElementById('cashMethod')
+            
+            if (banking.checked == true) {
+                cashOnDelivery.checked = false
+                cashMethod.value = 'banking'
+            } else {
+                cashMethod.value = '' // clear data
+            }
+    
+        }
+        
     </script>
 
 
     <!-- insert layout/commonBody.ejs file-->
     <%- include('layouts/commonBody') %>
-
-</body>
 
 </body>
 

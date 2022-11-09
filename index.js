@@ -6,6 +6,8 @@ const bodyParser = require('body-parser')
 //const { request, response } = require('express')
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
+//Mail send
+const nodemailer = require('nodemailer');
 //ใช้กับ online
 //const port = process.env.PORT
 
@@ -184,9 +186,9 @@ app.all('/login', (request, response) => {
                             response.cookie('login', login, { maxAge: age })
                             response.cookie('password', password, { maxAge: age })
                             response.cookie('save', saveCookie, { maxAge: age })
-                            
+
                             request.session.cookie.maxAge = age //กำหนดอายุของ session
-                            
+
                             //ถ้าไม่เลือกเก็บในเครื่อง แต่อาจมีคุกกี้เดิมเก็บไว้ ก็ให้ลบทิ้งไป
                         } else {
                             response.clearCookie('login')
@@ -655,12 +657,88 @@ app.all('/edit-address', (request, response) => {
 app.all('/buy-products', (request, response) => {
 
     let addressOrder = request.session.addressOrder || [] // เก็บข้อมูลที่อยู่ของ user
-    let grandPriceOrder = request.body.grandPriceOrder || '' /รับค่าราคาทั้งหมดที่ทำการสั่งซื้อ
+    let grandPriceOrder = request.body.grandPriceOrder || '' //รับค่าราคาทั้งหมดที่ทำการสั่งซื้อ
+    let cashMethod = request.body.cashMethod || '' // รับค่าข้อมูลช่องทางการชำระเงิน
+
+    //สำหรับคนที่ไม่ได้เป็นสมาชิก
+    if (!request.session.login) {
+
+        if (!request.session.addressOrder) { //ยังไม่ได้กรอกข้อมูลที่อยู่
+            response.render('input-address')
+        } else if (grandPriceOrder == '') {
+            response.render('products-InCart')
+        }
+        else {
+            response.render('buy-products', { dataAddress: addressOrder, dataGrandPrice: grandPriceOrder, dataCashMethod: cashMethod })
+        }
+    } else {
+
+        let form = new formidable.IncomingForm()
+        form.parse(request, (err, fields, files) => {
+
+            if (!err) {
+                let upfile = files.upfile
+                console.log(upfile.name)
+            }
+        })
+    }
+})
+
+app.all('/edit-address', (request, response) => {
+
+    let addressOrder = request.session.addressOrder || [] // เก็บข้อมูลที่อยู่ของ user
 
 
-    response.render('buy-products', { dataAddress: addressOrder })
+    response.render('edit-address', { dataAddress: addressOrder })
 
 
+})
+
+// ยืนยันการสั่งสินค้า เลือกวิธีชำระเงิน อัพโหลดสลิป
+
+app.all('/test', (request, response) => {
+
+    let addressOrder = request.session.addressOrder || [] // เก็บข้อมูลที่อยู่ของ user
+
+    let form = new formidable.IncomingForm()
+    form.parse(request, (err, fields, files) => {
+
+        if (!err) {
+            let upfile = files.upfile
+            console.log(upfile.path)
+            //console.log(form)
+            var transporter = nodemailer.createTransport({
+                service: 'outlook',
+                auth: {
+                    user: 'teerayut7723@outlook.com',
+                    pass: 'aaa@12345'
+                }
+            });
+            var data = 77777
+            var mailOptions = {
+                from: 'teerayut7723@outlook.com',
+                to: 'teerayut7723@gmail.com',
+                subject: 'Sending Email using Node.js 777',
+                //text: 'That was easy!'
+                //html: '<h1>Welcome</h1><p>That was easy!</p>',
+                html: '<div><h2>test text </h2></div> <img src="cid:777@create.ee"/>' + '<div>' + data + '</div>',
+                attachments: [{
+                    filename: upfile.name,
+                    path: upfile.path,
+                    cid: '777@create.ee' //same cid value as in the html img src
+                }]
+            };
+
+            transporter.sendMail(mailOptions, function (error, info) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    console.log('Email sent: ' + info.response);
+                }
+            });
+        }
+    })
+    response.render('buy-products', { dataAddress: addressOrder, dataGrandPrice: '77' })
 })
 
 app.listen(port, () => console.log('Server started on port: 3000'))
