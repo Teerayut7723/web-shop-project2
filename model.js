@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 // link database table name 'apshopdb'
-mongoose.connect(process.env.MONGODB_URI (Online), {
+mongoose.connect(process.env.MONGODB_URI (), {
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).catch(err => console.log(err))
