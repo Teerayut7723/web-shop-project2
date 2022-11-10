@@ -705,37 +705,57 @@ app.all('/test', (request, response) => {
 
         if (!err) {
             let upfile = files.upfile
-            console.log(upfile.path)
-            //console.log(form)
-            var transporter = nodemailer.createTransport({
-                service: 'outlook',
-                auth: {
-                    user: 'teerayut7723@outlook.com',
-                    pass: 'aaa@12345'
-                }
-            });
-            var data = 77777
-            var mailOptions = {
-                from: 'teerayut7723@outlook.com',
-                to: 'teerayut7723@gmail.com',
-                subject: 'Sending Email using Node.js 777',
-                //text: 'That was easy!'
-                //html: '<h1>Welcome</h1><p>That was easy!</p>',
-                html: '<div><h2>test text </h2></div> <img src="cid:777@create.ee"/>' + '<div>' + data + '</div>',
-                attachments: [{
-                    filename: upfile.name,
-                    path: upfile.path,
-                    cid: '777@create.ee' //same cid value as in the html img src
-                }]
-            };
+            let filenamePic = upfile.name
+            let dir = 'public/upload/'
+            let newfile = dir + upfile.name
 
-            transporter.sendMail(mailOptions, function (error, info) {
-                if (error) {
-                    console.log(error);
-                } else {
-                    console.log('Email sent: ' + info.response);
-                }
-            });
+            fs.readFile(upfile.path, function (err, data) {
+                if (err) { throw err }
+                //console.log('file read!')
+
+                // fs.writeFile(newfile, data, function (err) {
+                //     if (err) { throw err }
+                //     console.log('file written!')
+                // })
+
+                // fs.unlink(upfile.path,function (err) {
+                //     if (err) {throw err}
+                //     console.log('file deleted!')
+                // })
+
+
+                //console.log(form)
+                var transporter = nodemailer.createTransport({
+                    service: 'outlook',
+                    auth: {
+                        user: 'teerayut7723@outlook.com',
+                        pass: 'aaa@12345'
+                    }
+                });
+                var test = 77777
+                var mailOptions = {
+                    from: 'teerayut7723@outlook.com',
+                    to: 'teerayut7723@gmail.com',
+                    subject: 'Sending Email using Node.js 777',
+                    //text: 'That was easy!'
+                    //html: '<h1>Welcome</h1><p>That was easy!</p>',
+                    html: '<div><h2>test text </h2></div> <img src="cid:777@create.ee"/>' + '<div>' + test + '</div>',
+                    attachments: [{
+                        'filename': upfile.name,
+                        //path: 'D:/IMG_2809.JPG' ,
+                        'content': data,
+                        'cid': '777@create.ee' //same cid value as in the html img src
+                    }]
+                };
+
+                transporter.sendMail(mailOptions, function (error, info) {
+                    if (error) {
+                        console.log(error);
+                    } else {
+                        console.log('Email sent: ' + info.response);
+                    }
+                });
+            })
         }
     })
     response.render('buy-products', { dataAddress: addressOrder, dataGrandPrice: '77' })
