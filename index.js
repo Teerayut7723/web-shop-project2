@@ -726,8 +726,8 @@ app.all('/test', (request, response) => {
                 var transporter = nodemailer.createTransport({
                     service: 'outlook',
                     auth: {
-                        user: 'teerayut7723@outlook.com',
-                        pass: 'aaa@12345'
+                        user: process.env.AUTH_EMAIL,
+                        pass: process.env.AUTH_PASS
                     },
                     tls: {
                         // do not fail on invalid certs
@@ -750,13 +750,13 @@ app.all('/test', (request, response) => {
                     }]
                 };
 
-                // transporter.sendMail(mailOptions, function (error, info) {
-                //     if (error) {
-                //         console.log(error);
-                //     } else {
-                //         console.log('Email sent: ' + info.response);
-                //     }
-                // });
+                transporter.sendMail(mailOptions, function (error, info) {
+                    if (error) {
+                        console.log(error);
+                    } else {
+                        console.log('Email sent: ' + info.response);
+                    }
+                });
             })
         }
     })

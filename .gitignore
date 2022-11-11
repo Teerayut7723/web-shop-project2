@@ -1,3 +1,4 @@
 /node_modules
 package-lock.json
 mongodb-uri.text
+.env
