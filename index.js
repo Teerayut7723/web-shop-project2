@@ -9,7 +9,7 @@ const session = require('express-session')
 //Mail send
 const nodemailer = require('nodemailer');
 //ใช้กับ online
-const port = process.env.PORT
+const port = process.env.PORT || 3000
 
 //ใช้กับ localhost
 //const port = 3000
@@ -730,7 +730,11 @@ app.all('/test', (request, response) => {
                     auth: {
                         user: 'teerayut7723@outlook.com',
                         pass: 'aaa@12345'
-                    }
+                    },
+                    tls: {
+                        // do not fail on invalid certs
+                        rejectUnauthorized: false,
+                      },
                 });
                 var test = 77777
                 var mailOptions = {

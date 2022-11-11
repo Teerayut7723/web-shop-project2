@@ -1,7 +1,9 @@
 const mongoose = require('mongoose')
 
+// auto way localhost and server setting
+var keys = require('./config/key')
 // link database table name 'apshopdb'
-mongoose.connect(process.env.MONGODB_URI, {
+mongoose.connect(keys.mongoURI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).catch(err => console.log(err))
