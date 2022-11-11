@@ -708,7 +708,7 @@ app.all('/test', (request, response) => {
             let upfile = files.upfile
             
 
-             fs.readFile(upfile.path, function (err, data) {
+            // fs.readFile(upfile.path, function (err, data) {
             //     if (err) { throw err }
             //     console.log('file read!')
 
@@ -745,8 +745,8 @@ app.all('/test', (request, response) => {
                     html: '<div><h2>test text </h2></div> <img src="cid:777@create.ee"/>' + '<div>' + test + '</div>',
                     attachments: [{
                         'filename': upfile.name,
-                        //path: 'D:/IMG_2809.JPG' ,
-                        'content': data,
+                        path: upfile.path ,
+                        //'content': upfile.path,
                         'cid': '777@create.ee' //same cid value as in the html img src
                     }]
                 };
@@ -758,7 +758,7 @@ app.all('/test', (request, response) => {
                         console.log('Email sent: ' + info.response);
                     }
                 });
-            })
+           // })
         }
      })
     response.render('buy-products', { dataAddress: addressOrder, dataGrandPrice: '77' })
