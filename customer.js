@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 const paginate = require('mongoose-paginate-v2')
 
 // link database table name 'apshopdb'
-mongoose.connect(process.env.MONGODB_URI, {
+mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://admin:072193706@cluster0.scu2r.mongodb.net/apshopdb?retryWrites=true&w=majority', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).catch(err => console.log(err))

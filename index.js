@@ -20,6 +20,7 @@ const fs = require('fs')
 const formidable = require('formidable')
 const { request } = require('http')
 const { response } = require('express')
+const { env } = require('process')
 
 app.set('view engine', 'ejs')
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -707,9 +708,9 @@ app.all('/test', (request, response) => {
             let upfile = files.upfile
             
 
-            fs.readFile(upfile.path, function (err, data) {
-                if (err) { throw err }
-                //console.log('file read!')
+             fs.readFile(upfile.path, function (err, data) {
+            //     if (err) { throw err }
+            //     console.log('file read!')
 
                 // fs.writeFile(newfile, data, function (err) {
                 //     if (err) { throw err }
@@ -726,8 +727,8 @@ app.all('/test', (request, response) => {
                 var transporter = nodemailer.createTransport({
                     service: 'outlook',
                     auth: {
-                        user: process.env.AUTH_EMAIL,
-                        pass: process.env.AUTH_PASS
+                        user: process.env.AUTH_EMAIL || 'teerayut7723@outlook.com',
+                        pass: process.env.AUTH_PASS || 'aaa@12345'
                     },
                     tls: {
                         // do not fail on invalid certs
@@ -759,7 +760,7 @@ app.all('/test', (request, response) => {
                 });
             })
         }
-    })
+     })
     response.render('buy-products', { dataAddress: addressOrder, dataGrandPrice: '77' })
 })
 
