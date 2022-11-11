@@ -9,7 +9,7 @@ const session = require('express-session')
 //Mail send
 const nodemailer = require('nodemailer');
 //ใช้กับ online
-const port = process.env.PORT || 3000
+const port = process.env.PORT
 
 //ใช้กับ localhost
 //const port = 3000
