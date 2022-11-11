@@ -1,12 +1,10 @@
 const mongoose = require('mongoose')
 
-// // auto way localhost and server setting
-// var keys = require('./config/key')
-// // link database table name 'apshopdb'
-// mongoose.connect(keys.mongoURI, {
-//     useNewUrlParser: true,
-//     useUnifiedTopology: true
-// }).catch(err => console.log(err))
+// link database table name 'apshopdb'
+mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+}).catch(err => console.log(err))
 
 const modelSchema = new mongoose.Schema({
     productCode: {type: String, required: true, minlength: 6, trim: true },

@@ -1,9 +1,8 @@
 const mongoose = require('mongoose')
 const paginate = require('mongoose-paginate-v2')
-//auto way localhost and server setting
-var keys = require('./config/key')
+
 // link database table name 'apshopdb'
-mongoose.connect(keys.mongoURI, {
+mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).catch(err => console.log(err))
