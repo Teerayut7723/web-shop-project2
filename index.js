@@ -466,9 +466,21 @@ app.all('/product-cart', (request, response) => {
 
     let userName = request.session.firstname || ''
     let listMainInCart = request.session.userID || []
+    let listInCart = [] //เก็บ list รายการและจำนวนสินค้าในรถเข็น
+
+    let productCodeDelete = request.body.itemCode || '' // อ่านค่า item code ที่จะลบ
+
+    let productCode = request.body.productCode || ''
+    let productName = request.body.productName || ''
+    let productDescription = request.body.productDescription || ''
+    let productPrice = request.body.productPrice || ''
+    let qtyBuyProduct = request.body.qtyBuyProduct || ''
+    let productImage = request.body.productImage || ''
+    let productRemain = request.body.productRemain || ''
 
     let deleteItem = request.body.itemDelete || ''
-    let productCode = request.body.itemCode || ''
+
+    let orderNowClick = request.body.orderNow || '' //ถ้ากดปุ่มสั่งซื้อตอนนี้ ให้ทำการเพิ่ม list สินค้าที่จะสั่งเข้าไปด้วย
 
     let addressOrder = request.session.addressOrder || [] // เก็บข้อมูลที่อยู่ของ user
     let checkDataAddress = ''
@@ -482,7 +494,7 @@ app.all('/product-cart', (request, response) => {
         //ถ้าเข้ามาแบบไม่ได้ log-in และ ทำการลบข้อมูลใน list
         if (deleteItem == 'itemDelete') {
             for (i in listMainInCart) {
-                if (listMainInCart[i].includes(productCode)) {
+                if (listMainInCart[i].includes(productCodeDelete)) {
                     listMainInCart.splice(i, 1)
                 }
             }
@@ -494,6 +506,32 @@ app.all('/product-cart', (request, response) => {
         } else {
             checkDataAddress = 'true'
         }
+        
+        //ถ้ากดปุ่มสั่งซื้อตอนนี้ ให้ทำการเพิ่ม list สินค้าที่จะสั่งเข้าไปด้วย
+        if (orderNowClick == 'true') {
+            let sumQty = 0
+            for (i in listMainInCart) {
+
+                if (listMainInCart[i].includes(productCode)) {
+
+                    sumQty = parseInt(listMainInCart[i][4]) + parseInt(qtyBuyProduct)
+                    if (sumQty <= parseInt(productRemain)) { // ถ้าบวกกันแล้วไม่เกินของที่เหลือในคลัง
+                        qtyBuyProduct = sumQty.toString()
+                    } else {
+                        qtyBuyProduct = productRemain //ถ้าซื้อมากกว่าที่มีในคลังให้มีค่าเท่ากับของที่เหลือในคลัง
+                    }
+
+                    // ลบข้อมูลในรายการนี้ออกเพื่อทำการเพิ่มเข้าไปใหม่
+                    let dataDelete = listMainInCart.splice(i, 1)
+                }
+            }
+            listInCart.push(productCode, productName, productDescription, productPrice, qtyBuyProduct, productImage, productRemain)
+            listMainInCart.push(listInCart)
+
+            request.session.quantity = listMainInCart.length.toString()
+            request.session.userID = listMainInCart
+        }
+
         response.render('products-InCart', { dataAddress: checkDataAddress, data: listMainInCart })
 
     } else {
@@ -502,7 +540,7 @@ app.all('/product-cart', (request, response) => {
         //ถ้าเข้ามาแบบ log-in แล้วและ ทำการลบข้อมูลใน list
         if (deleteItem == 'itemDelete') {
             for (i in listMainInCart) {
-                if (listMainInCart[i].includes(productCode)) {
+                if (listMainInCart[i].includes(productCodeDelete)) {
                     listMainInCart.splice(i, 1)
                 }
             }
@@ -513,6 +551,31 @@ app.all('/product-cart', (request, response) => {
             checkDataAddress = 'false'
         } else {
             checkDataAddress = 'true'
+        }
+
+        //ถ้ากดปุ่มสั่งซื้อตอนนี้ ให้ทำการเพิ่ม list สินค้าที่จะสั่งเข้าไปด้วย
+        if (orderNowClick == 'true') {
+            let sumQty = 0
+            for (i in listMainInCart) {
+
+                if (listMainInCart[i].includes(productCode)) {
+
+                    sumQty = parseInt(listMainInCart[i][4]) + parseInt(qtyBuyProduct)
+                    if (sumQty <= parseInt(productRemain)) { // ถ้าบวกกันแล้วไม่เกินของที่เหลือในคลัง
+                        qtyBuyProduct = sumQty.toString()
+                    } else {
+                        qtyBuyProduct = productRemain //ถ้าซื้อมากกว่าที่มีในคลังให้มีค่าเท่ากับของที่เหลือในคลัง
+                    }
+
+                    // ลบข้อมูลในรายการนี้ออกเพื่อทำการเพิ่มเข้าไปใหม่
+                    let dataDelete = listMainInCart.splice(i, 1)
+                }
+            }
+            listInCart.push(productCode, productName, productDescription, productPrice, qtyBuyProduct, productImage, productRemain)
+            listMainInCart.push(listInCart)
+
+            request.session.quantity = listMainInCart.length.toString()
+            request.session.userID = listMainInCart
         }
         response.render('products-InCart', { logedIn: true, user: userName, dataAddress: checkDataAddress, data: listMainInCart })
     }
@@ -542,7 +605,7 @@ app.all('/input-address', (request, response) => {
     }
     // สร้าง list ขึ้นใหม่จากการที่ผู้ใช้เลือกบางรายการจาก รายกายในรถเข็น ผ่าน checkbox
     if (chooseItemOrder != '') {
-
+        listItemOder = []
         let dataListOrder = chooseItemOrder.split(',')
         for (c in listMainInCart) {
             if (listMainInCart[c].includes(dataListOrder[0])) {
@@ -800,7 +863,7 @@ app.all('/search', (request, response) => {
         }
 
         // อ่านข้อมูล database และส่งไปแสดงที่ card กรณีทำการ log-in แล้ว
-        Product.find({name : new RegExp(search,'i')}).exec((err, docs) => {
+        Product.find({ name: new RegExp(search, 'i') }).exec((err, docs) => {
             response.render('index', { logedIn: true, user: userName, data: docs, qtyInCart: quantity })
         })
         //ถ้าไม่ได้ log-in
@@ -810,8 +873,8 @@ app.all('/search', (request, response) => {
             quantity = '0'
         }
         // อ่านข้อมูล database และส่งไปแสดงที่ card
-        Product.find({name : new RegExp(search,'i')}).exec((err, docs) => {
-            
+        Product.find({ name: new RegExp(search, 'i') }).exec((err, docs) => {
+
             response.render('index', { logedIn: false, data: docs, qtyInCart: quantity })
         })
 
