@@ -685,6 +685,8 @@ app.all('/buy-products', (request, response) => {
     }
 })
 
+// แก้ไขที่อยู่
+
 app.all('/edit-address', (request, response) => {
 
     let addressOrder = request.session.addressOrder || [] // เก็บข้อมูลที่อยู่ของ user
@@ -706,62 +708,115 @@ app.all('/test', (request, response) => {
 
         if (!err) {
             let upfile = files.upfile
-            
+
 
             // fs.readFile(upfile.path, function (err, data) {
             //     if (err) { throw err }
             //     console.log('file read!')
 
-                // fs.writeFile(newfile, data, function (err) {
-                //     if (err) { throw err }
-                //     console.log('file written!')
-                // })
+            // fs.writeFile(newfile, data, function (err) {
+            //     if (err) { throw err }
+            //     console.log('file written!')
+            // })
 
-                // fs.unlink(upfile.path,function (err) {
-                //     if (err) {throw err}
-                //     console.log('file deleted!')
-                // })
+            // fs.unlink(upfile.path,function (err) {
+            //     if (err) {throw err}
+            //     console.log('file deleted!')
+            // })
 
 
-                //console.log(form)
-                var transporter = nodemailer.createTransport({
-                    service: 'outlook',
-                    auth: {
-                        user: process.env.AUTH_EMAIL || 'teerayut7723@outlook.com',
-                        pass: process.env.AUTH_PASS || 'aaa@12345'
-                    },
-                    tls: {
-                        // do not fail on invalid certs
-                        rejectUnauthorized: false,
-                      },
-                });
-                var test = 77777
-                var mailOptions = {
-                    from: 'teerayut7723@outlook.com',
-                    to: 'teerayut7723@gmail.com',
-                    subject: 'Sending Email using Node.js 777',
-                    //text: 'That was easy!'
-                    //html: '<h1>Welcome</h1><p>That was easy!</p>',
-                    html: '<div><h2>test text </h2></div> <img src="cid:777@create.ee"/>' + '<div>' + test + '</div>',
-                    attachments: [{
-                        'filename': upfile.name,
-                        path: upfile.path ,
-                        //'content': upfile.path,
-                        'cid': '777@create.ee' //same cid value as in the html img src
-                    }]
-                };
+            //console.log(form)
+            var transporter = nodemailer.createTransport({
+                service: 'outlook',
+                auth: {
+                    user: process.env.AUTH_EMAIL || 'teerayut7723@outlook.com',
+                    pass: process.env.AUTH_PASS || 'aaa@12345'
+                },
+                tls: {
+                    // do not fail on invalid certs
+                    rejectUnauthorized: false,
+                },
+            });
+            var test = 77777
+            var mailOptions = {
+                from: 'teerayut7723@outlook.com',
+                to: 'teerayut7723@gmail.com',
+                subject: 'Sending Email using Node.js 777',
+                //text: 'That was easy!'
+                //html: '<h1>Welcome</h1><p>That was easy!</p>',
+                html: '<div><h2>test text </h2></div> <img src="cid:777@create.ee"/>' + '<div>' + test + '</div>',
+                attachments: [{
+                    'filename': upfile.name,
+                    path: upfile.path,
+                    //'content': upfile.path,
+                    'cid': '777@create.ee' //same cid value as in the html img src
+                }]
+            };
 
-                transporter.sendMail(mailOptions, function (error, info) {
-                    if (error) {
-                        console.log(error);
-                    } else {
-                        console.log('Email sent: ' + info.response);
-                    }
-                });
-           // })
+            transporter.sendMail(mailOptions, function (error, info) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    console.log('Email sent: ' + info.response);
+                }
+            });
+            // })
         }
-     })
+    })
     response.render('buy-products', { dataAddress: addressOrder, dataGrandPrice: '77' })
+})
+
+// ค้นหาสินค้า
+
+app.all('/search', (request, response) => {
+
+    let listMainInCart = request.session.userID || [] //array เก็บข้อมูลหลัก list รายการและจำนวนสินค้าในรถเข็น
+    let dataQuantityList = request.body.dataQuantityList || '' //รับค่าจำนวนที่สั่งเพื่ออัพเดตใหม่ จากหน้าในรถเข็น
+
+    let search = request.body.search || '' // รับค่า keyword สำหรับค้นหาข้อมูล
+
+    request.session.itemOrder = [] // clear data ใน session เมื่อกดกลับมาที่หน้านี้
+
+
+    if (dataQuantityList != '') {
+
+        let dataListArr = dataQuantityList.split(',')
+        for (i in listMainInCart) {
+            if (listMainInCart[i][0] == dataListArr[0]) { //compare product code ตรงกันใน list หน้ารถเข็น
+
+                listMainInCart[i][4] = dataListArr[1]
+                dataListArr.splice(0, 2)
+            }
+        }
+
+    }
+
+    if (request.session.login) { // อ่านค่าใน session
+        let userName = request.session.firstname || ''
+        let quantity = request.session.quantity || ''
+
+        if (quantity == '') {
+            quantity = '0'
+        }
+
+        // อ่านข้อมูล database และส่งไปแสดงที่ card กรณีทำการ log-in แล้ว
+        Product.find({name : new RegExp(search,'i')}).exec((err, docs) => {
+            response.render('index', { logedIn: true, user: userName, data: docs, qtyInCart: quantity })
+        })
+        //ถ้าไม่ได้ log-in
+    } else {
+        let quantity = request.session.quantity || ''
+        if (quantity == '') {
+            quantity = '0'
+        }
+        // อ่านข้อมูล database และส่งไปแสดงที่ card
+        Product.find({name : new RegExp(search,'i')}).exec((err, docs) => {
+            
+            response.render('index', { logedIn: false, data: docs, qtyInCart: quantity })
+        })
+
+    }
+
 })
 
 app.listen(port, () => console.log('Server started on port: 3000'))
