@@ -256,15 +256,46 @@ app.all('/admin777/add-product', (request, response) => {
     }
 })
 
+// หน้า admin log-in สำหรับ update-product
+app.all('/admin777/update-product', (request, response) => {
+
+    if (!request.body.userName) {
+        response.render('admin777')
+    }
+    else {
+        //อ่านข้อมูลจาก form
+        let userName = request.body.userName || ''
+        let userPassword = request.body.userPassword || ''
+        if (userName == 'aobpan7723' && userPassword == '777') {
+
+            //let age = 30 * 60 * 1000 //cookie มีอายุ 30 นาที.
+            //response.cookie('userName', userName, { maxAge: age })
+
+            request.session.userName = userName // จำผู้ใช้เมื่อ login แล้ว
+            response.render('update-product', { user: userName })
+        } else {
+            response.render('admin777', { msg: 'user name หรือ password ไม่ถูกต้อง' })
+        }
+    }
+})
+
 // หน้า web management จัดการร้าน
 app.all('/web-management', (request, response) => {
 
     response.render('web-management')
 })
 
+// Log-out 
+
+app.get('/admin-logout', (request, response) => {
+
+        request.session.destroy((err) => { })
+    
+    response.redirect('/')
+})
+
 // เพิ่มรายการสินค้าใหม่
 app.all('/add-product', (request, response) => {
-
 
     if (request.session.userName) {
         // response.render('add-product', { user: userName }) //ถ้า login แล้ว
@@ -346,7 +377,25 @@ app.all('/add-product', (request, response) => {
             })
         }
     } else {
-        response.render('admin777/add-product') //ถ้าไม่ได้ทำการ login ให้เปิดหน้าทำการ login
+        response.render('web-management') //ถ้าไม่ได้ทำการ login ให้เปิดหน้าทำการ login
+    }
+
+})
+
+// อัพเดตรายการสินค้าใหม่
+app.all('/update-product', (request, response) => {
+
+    if (request.session.userName) {
+        // response.render('add-product', { user: userName }) //ถ้า login แล้ว
+
+
+        if (request.method == 'GET') {
+            let userName = request.session.userName
+            response.render('update-product', { user: userName })
+            return
+        }
+    } else {
+        response.render('web-management') //ถ้าไม่ได้ทำการ login ให้เปิดหน้าทำการ login
     }
 
 })

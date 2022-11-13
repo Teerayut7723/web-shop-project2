@@ -26,7 +26,7 @@
                 </div>
                 <% } %>
 
-                    <form method="post" action="/admin777/add-product">
+                    <form method="post" action="" id="formAction">
                         <div class="row mb-3 mt-3">
                             <label for="inputEmail3" class="col-sm-2 col-md-2 cols-lg-1 col-form-label">User
                                 name:</label>
@@ -38,15 +38,23 @@
                             <label for="inputPassword3"
                                 class="col-sm-2 col-md-2 cols-lg-1 col-form-label">Password:</label>
                             <div class="col-sm-10">
-                                <input type="password" class="form-control w-50" id="inputPassword3"
-                                    name="userPassword" required>
+                                <input type="password" class="form-control w-50" id="inputPassword3" name="userPassword"
+                                    required>
                                 <input type="checkbox" onclick="myFunction()" class="mt-3">แสดงรหัสผ่าน
                             </div>
-                        </div>                      
-                            <button type="submit" class="btn btn-primary mb-5 w-25" style="position: relative; left: 50px;">Log-in</button>
+                        </div>
+                        <input type="hidden" id="currentURL">
+                        <button type="submit" class="btn btn-primary mb-5 w-25" style="position: relative; left: 50px;"
+                            onclick="checkCurrentURL()">Log-in</button>
                     </form>
 
-                    <a id="index" href="/" style="position:relative; left: 50px;">หน้าแรก</a>
+                    <div class="flex flex-row">
+                        <a id="index" href="/" style="position:relative; left: 50px;">หน้าแรก</a>
+
+                        <a href="/web-management"
+                            style="position:relative; left: 50px; margin-left: 30px;">หน้าหลักจัดการร้าน</a><br><br>
+
+                    </div>
     </div>
     <script>
         function myFunction() {
@@ -57,6 +65,23 @@
                 x.type = "password";
             }
 
+        }
+        // check current URL for before move page
+        function checkCurrentURL() {
+
+            let checkCurrentURL = document.getElementById('currentURL')
+            let formAction = document.getElementById('formAction')
+
+            let currentURL = window.location.pathname
+
+            if (currentURL == '/admin777/add-product') {
+
+                formAction.action = '/admin777/add-product'
+
+            } else if (currentURL == '/admin777/update-product') {
+
+                formAction.action = '/admin777/update-product'
+            }
         }
 
     </script>
