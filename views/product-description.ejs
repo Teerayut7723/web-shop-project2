@@ -31,19 +31,19 @@
                 <div id="carouselExampleControlsNoTouching" class="carousel slide w-75 p-2" data-bs-touch="true"
                     data-bs-interval="false">
                     <div class="carousel-inner">
+
                         <% for (d of data) { %>
                             <!--separate for each image name-->
 
                             <% let imgs=d.images.split(',') %>
 
-                                <div class="carousel-item active">
-                                    <img src="/product-images/<%= imgs[0] %>" class="d-block w-100" alt="Image">
-                                </div>
-                                <% for (i=1; i < imgs.length; i++) { %>
-                                    <div class="carousel-item">
+                                <% for (i=0; i < imgs.length; i++) { %>
+
+                                    <div class="carousel-item" id="carousel0">
                                         <img src="/product-images/<%= imgs[i] %>" class="d-block w-100" alt="Image">
                                     </div>
                                     <% } %>
+                                        
                                         <% } %>
                     </div>
                     <button class="carousel-control-prev" type="button"
@@ -129,8 +129,8 @@
                                                     onclick="moveToCart()"><i class="bi bi-cart2"></i>
                                                     ใส่รถเข็น</button>
 
-                                                    <!--Order now click-->
-                                                    <input type="hidden" id="orderNow" name="orderNow" value="false">
+                                                <!--Order now click-->
+                                                <input type="hidden" id="orderNow" name="orderNow" value="false">
                                                 <button type="submit" class="btn btn-primary mt-2"
                                                     onclick="productInCart()"><i class="bi bi-coin"></i>
                                                     สั่งเลยตอนนี้</button>
@@ -228,7 +228,7 @@
                 let orderNow = document.getElementById('orderNow')
 
                 orderNow.value = 'true'
-                
+
                 buyForm.action = '/product-cart'
             }
 
@@ -243,12 +243,14 @@
                 var priceTotal = document.getElementById('priceTotal')
 
                 priceTotal.innerHTML = 'ราคารวม = ' + (buyTotalNum * pricePerPieceNum).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' บาท'
+
+                document.getElementById('carousel0').setAttribute('class','carousel-item active')
             }
 
         </script>
 
         <!-- insert layout/commonBody.ejs file-->
-    <%- include('layouts/commonBody') %>
+        <%- include('layouts/commonBody') %>
 
 </body>
 
