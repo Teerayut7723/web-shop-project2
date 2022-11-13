@@ -51,8 +51,8 @@
                 <div>ธนาคารไทยพานิชย์ เลขที่บัญชี </div><span style="color: blue; font-weight: bold;">123456789
                     <input type="hidden" id="bankNumber" value="123456789">
                     <button type="button" class="btn btn-outline-primary mx-2 w-15" data-bs-toggle="tooltip"
-                        data-bs-placement="top" data-bs-title="Copy" onclick="copyBankID()" id="btnCopy"
-                        onblur="textCopy()">Copy</button></span>
+                        data-bs-placement="top" data-bs-title="Copy" onclick="copyBankID()"
+                        id="btnCopy">Copy</button></span>
 
             </div>
 
@@ -226,24 +226,40 @@
             let bankNumber = document.getElementById("bankNumber")
             let btnCopy = document.getElementById('btnCopy')
 
-            bankNumber.select()
-            //bankNumber.setSelectionRange(0, 99999); // For mobile devices
+            let tempText = document.createElement('input') //Create temporary element
 
-            navigator.clipboard.writeText(bankNumber.value)
+            if (btnCopy.innerHTML == 'Copy') {
+                tempText.value = bankNumber.value
+                document.body.appendChild(tempText) //Addition temporary element
 
-            btnCopy.innerHTML = 'Copied'
+                tempText.select() 
+                //bankNumber.setSelectionRange(0, 99999); // For mobile devices
 
+                //navigator.clipboard.writeText(bankNumber.value)
+
+                document.execCommand("copy")
+
+                document.body.removeChild(tempText) //Delete temporary element
+
+                btnCopy.innerHTML = 'Copied'
+                
+            } else {
+
+                tempText.value = bankNumber.value
+                document.body.appendChild(tempText)
+
+                tempText.select()
+                //bankNumber.setSelectionRange(0, 99999); // For mobile devices
+
+                //navigator.clipboard.writeText(bankNumber.value)
+
+                document.execCommand("copy")
+
+                document.body.removeChild(tempText)
+                btnCopy.innerHTML = 'Copy'
+            }
         }
 
-        // lose focus on button copy
-
-        function textCopy() {
-
-            let btnCopy = document.getElementById('btnCopy')
-
-            btnCopy.innerHTML = 'Copy'
-
-        }
 
         // Cash way select on cash deleverly
 
@@ -252,14 +268,14 @@
             let cashOnDelivery = document.getElementById('cashOnDelivery')
             let banking = document.getElementById('banking')
             let cashMethod = document.getElementById('cashMethod')
-            
+
             if (cashOnDelivery.checked == true) {
                 banking.checked = false
                 cashMethod.value = 'cashOnDelivery'
             } else {
                 cashMethod.value = '' // clear data
             }
-         
+
         }
 
         // Cash way select on cash banking
@@ -269,16 +285,16 @@
             let cashOnDelivery = document.getElementById('cashOnDelivery')
             let banking = document.getElementById('banking')
             let cashMethod = document.getElementById('cashMethod')
-            
+
             if (banking.checked == true) {
                 cashOnDelivery.checked = false
                 cashMethod.value = 'banking'
             } else {
                 cashMethod.value = '' // clear data
             }
-    
+
         }
-        
+
     </script>
 
 
