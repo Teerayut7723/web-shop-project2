@@ -289,8 +289,8 @@ app.all('/web-management', (request, response) => {
 
 app.get('/admin-logout', (request, response) => {
 
-        request.session.destroy((err) => { })
-    
+    request.session.destroy((err) => { })
+
     response.redirect('/')
 })
 
@@ -322,22 +322,36 @@ app.all('/add-product', (request, response) => {
                     }
                 }
 
-                //const dir = 'public/product-images/'
+                const dir = 'public/product-images/'
                 let fileNames = []  //เก็บชื่อของแต่ละไฟล์
 
                 for (f of upfiles) {
-                    //let newfile = dir + f.name
+                    let newfile = dir + f.name
                     let newName = f.name
 
-                    // while (fs.existsSync(newfile)) {        
-                    //    let oldName = f.name.split('.')
-                    //     let r = Math.floor(Math.random() * 999999)
-                    //     oldName[0] += '_' + r
-                    //     newName = oldName.join('.')
-                    //    newfile = dir + newName
-                    // }
+                    while (fs.existsSync(newfile)) {
+                        let oldName = f.name.split('.')
+                        let r = Math.floor(Math.random() * 999999)
+                        oldName[0] += '_' + r
+                        newName = oldName.join('.')
+                        newfile = dir + newName
+                    }
                     fileNames.push(newName)
-                    //fs.rename(f.path, newfile, err => { }) 
+                    //fs.rename(f.path, newfile, err => { })
+                    fs.readFile(f.path, function (err, data) {
+                        if (err) { throw err }
+                        //console.log('file read!')
+
+                        fs.writeFile(newfile, data, function (err) {
+                            if (err) { throw err }
+                            //console.log('file written!')
+                        })
+
+                        // fs.unlink(f.path, function (err) {
+                        //     if (err) { throw err }
+                        //     console.log('file deleted!')
+                        // })
+                    })
                 }
 
                 //นำชื่อไฟล์มารวมเป็นสตริงเดียวกัน
@@ -385,6 +399,8 @@ app.all('/add-product', (request, response) => {
 // อัพเดตรายการสินค้าใหม่
 app.all('/update-product', (request, response) => {
 
+    let searchProductCode = request.body.searchProductCode || '' //รับค่ารหัสสินค้า เพื่อทำการค้นหา
+
     if (request.session.userName) {
         // response.render('add-product', { user: userName }) //ถ้า login แล้ว
 
@@ -393,6 +409,14 @@ app.all('/update-product', (request, response) => {
             let userName = request.session.userName
             response.render('update-product', { user: userName })
             return
+        }
+
+        if (searchProductCode != '') {
+
+            // อ่านข้อมูล database และนำไปแสดงที่ ช่องข้อมูลแต่ละช่อง
+            Product.find({ productCode: new RegExp(searchProductCode, 'i') }).exec((err, docs) => {
+                response.render('update-product', { user: userName, data: docs })
+            })
         }
     } else {
         response.render('web-management') //ถ้าไม่ได้ทำการ login ให้เปิดหน้าทำการ login
@@ -555,7 +579,7 @@ app.all('/product-cart', (request, response) => {
         } else {
             checkDataAddress = 'true'
         }
-        
+
         //ถ้ากดปุ่มสั่งซื้อตอนนี้ ให้ทำการเพิ่ม list สินค้าที่จะสั่งเข้าไปด้วย
         if (orderNowClick == 'true') {
             let sumQty = 0

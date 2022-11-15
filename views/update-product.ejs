@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>
-        AP Shopping market - เพิ่มสินค้า
+        AP Shopping market - อัพเดตรายละเอียดสินค้า
     </title>
 
     <style>
@@ -49,14 +49,28 @@
 
     <div class="display-4 bg-success">Hello <%=user %></div>
 
-    <h2><u>เพิ่มสินค้า</u></h2>
+    <h2><u>อัพเดตรายละเอียดสินค้า</u></h2>
     <br>
 
     <%# ถ้ามีข้อความส่งมาจากไฟล์หลัก ให้แสดงข้อความนั้น %>
     <% if (locals.msg ) { %>
         <div id="result" style="color:red ;"><%= msg %></div>
     <% } %>
-    <form method="post" action="/add-product" enctype="multipart/form-data">
+
+    <div>
+        <nav class="navbar navbar-dark bg-primary">
+            <div class="container">
+                <form action="/update-product" method="post" class="d-flex" role="search">
+                    <input class="form-control me-2 w-100" type="search" name="searchProductCode" placeholder="ใส่รหัสสินค้า"
+                        aria-label="Search">
+                    <button class="btn btn-outline-light w-50 h-25" type="submit">ค้นหา</button>
+                </form>
+            </div>
+        </nav>
+    </div>
+
+    
+    <form method="post" action="/update-product" enctype="multipart/form-data">
         <input type="text" name="productCode" placeholder="รหัสสินค้า" required> :รหัสสินค้า<br>
         <input type="text" name="name" placeholder="ชื่อสินค้า" required> :ชื่อสินค้า<br>
         <input type="number" name="price" placeholder="ราคาสินค้า" required> :ราคาสินค้า<br>
@@ -65,10 +79,10 @@
         <div><textarea name="mainDescription" id="mainDescription" cols="30" rows="10"></textarea></div>
         <h5>คำอธิบายย่อย</h5>
         <div><textarea name="subDescription" id="subDescription" cols="30" rows="20"></textarea></div>
-        <input type="file" name="upfiles" accept="image/*" multiple required><br>
+        <input type="file" name="upfiles" accept="image/*" multiple required ><br>
         <label>ภาพสินค้า ไม่เกิน 5 ภาพ</label><br><br>
 
-        <button type="button" onclick="submitForm()">OK</button>
+        <button type="button" onclick="submitForm()">Update data</button>
     </form>
     <a id="index" href="/web-management">หน้าหลักจัดการร้าน</a><br><br><br>
     
