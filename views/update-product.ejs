@@ -8,87 +8,186 @@
     <title>
         AP Shopping market - อัพเดตรายละเอียดสินค้า
     </title>
-
-    <style>
-        form, a#index {
-            margin: 20px;
-        }
-        form input,form textarea {
-            margin-bottom: 20px;
-            width: 500px;
-            
-        }
-    </style>
-
-<script>
-    function submitForm() {
-        let file = document.querySelector('[type="file"]')
-        let KB = 1000 //ขนาดไฟน์สูงสุดที่ upload ได้
-        let maxFileSize = KB * 1024
-
-        if (file.files.length > 5) {
-            alert('เลือกได้ไม่เกิน 5 ไฟล์')
-            return
-        }
-
-        for (f of file.files) {
-            if (f.size > (maxFileSize)) {
-                alert(`ขนาดของไฟล์ต้องไม่เกิน ${KB} KB`)
-                return
+    <!-- insert layout/commonHead.ejs file-->
+    <%- include('layouts/commonHead') %>
+        <style>
+            form,
+            a#index {
+                margin: 20px;
             }
-        }
 
-        document.querySelector('form').submit()
-    }
-</script>
-<!-- insert layout/commonHead.ejs file-->
-<%- include('layouts/commonHead') %>
+            form input,
+            form textarea {
+                margin-bottom: 20px;
+                width: 500px;
+
+            }
+        </style>
+
+        <script>
+            function submitFormImage() {
+                let file = document.querySelector('[type="file"]')
+                let KB = 1000 //ขนาดไฟน์สูงสุดที่ upload ได้
+                let maxFileSize = KB * 1024
+                let selectImage = document.getElementById('selectImage')
+
+                if (file.files.length > 1) {
+                    alert('เลือกได้ไม่เกิน 1 ไฟล์')
+                    return
+                }
+
+                for (f of file.files) {
+                    if (f.size > (maxFileSize)) {
+                        alert(`ขนาดของไฟล์ต้องไม่เกิน ${KB} KB`)
+                        return
+                    }
+                }
+
+                if (selectImage.innerHTML != '-') {
+                    document.querySelector('form').submit()
+                } else {
+                    alert('ยังไม่ได้เลือกรูปภาพ')
+                }
+            }
+        </script>
+
 </head>
 
-<body>
+<body onload="checklistImage()">
 
-    <div class="display-4 bg-success">Hello <%=user %></div>
+    <div class="display-4 bg-success">Hello <%=user %>
+    </div>
 
     <h2><u>อัพเดตรายละเอียดสินค้า</u></h2>
     <br>
 
     <%# ถ้ามีข้อความส่งมาจากไฟล์หลัก ให้แสดงข้อความนั้น %>
-    <% if (locals.msg ) { %>
-        <div id="result" style="color:red ;"><%= msg %></div>
-    <% } %>
-
-    <div>
-        <nav class="navbar navbar-dark bg-primary">
-            <div class="container">
-                <form action="/update-product" method="post" class="d-flex" role="search">
-                    <input class="form-control me-2 w-100" type="search" name="searchProductCode" placeholder="ใส่รหัสสินค้า"
-                        aria-label="Search">
-                    <button class="btn btn-outline-light w-50 h-25" type="submit">ค้นหา</button>
-                </form>
+        <% if (locals.msg ) { %>
+            <div id="result" style="color:red ;">
+                <%= msg %>
             </div>
-        </nav>
-    </div>
+            <% } %>
 
-    
-    <form method="post" action="/update-product" enctype="multipart/form-data">
-        <input type="text" name="productCode" placeholder="รหัสสินค้า" required> :รหัสสินค้า<br>
-        <input type="text" name="name" placeholder="ชื่อสินค้า" required> :ชื่อสินค้า<br>
-        <input type="number" name="price" placeholder="ราคาสินค้า" required> :ราคาสินค้า<br>
-        <input type="number" name="productRemain" placeholder="สินค้าคงเหลือ" required> :สินค้าคงเหลือ<br>
-        <h5>คำอธิบายหลัก</h5>
-        <div><textarea name="mainDescription" id="mainDescription" cols="30" rows="10"></textarea></div>
-        <h5>คำอธิบายย่อย</h5>
-        <div><textarea name="subDescription" id="subDescription" cols="30" rows="20"></textarea></div>
-        <input type="file" name="upfiles" accept="image/*" multiple required ><br>
-        <label>ภาพสินค้า ไม่เกิน 5 ภาพ</label><br><br>
+                <div>
+                    <nav class="navbar navbar-dark bg-primary">
+                        <div class="container">
+                            <form action="/update-product" method="post" class="d-flex" role="search">
+                                <input class="form-control me-2" type="search" name="searchProductCode"
+                                    placeholder="ใส่รหัสสินค้า 6 หลัก" aria-label="Search" style="width: 400px;">
+                                <button class="btn btn-outline-light w-50 h-25" type="submit">ค้นหา</button>
+                            </form>
+                        </div>
+                    </nav>
+                </div>
 
-        <button type="button" onclick="submitForm()">Update data</button>
-    </form>
-    <a id="index" href="/web-management">หน้าหลักจัดการร้าน</a><br><br><br>
-    
+                <% for (d of data) { %>
 
-    <!-- insert layout/commonBody.ejs file-->
-    <%- include('layouts/commonBody') %>
+                    <form method="post" action="/update-product">
+
+                        <input type="text" name="productCode" placeholder="รหัสสินค้า" required
+                            value="<%= d.productCode%>"> :รหัสสินค้า<br>
+                        <input type="text" name="name" placeholder="ชื่อสินค้า" required value="<%= d.name %>">
+                        :ชื่อสินค้า<br>
+                        <input type="number" name="price" placeholder="ราคาสินค้า" required value="<%= d.price %>">
+                        :ราคาสินค้า<br>
+                        <input type="number" name="productRemain" placeholder="สินค้าคงเหลือ" required
+                            value="<%= d.productRemain %>">
+                        :สินค้าคงเหลือ<br>
+                        <h5>คำอธิบายหลัก</h5>
+                        <div><textarea name="mainDescription" id="mainDescription" cols="30" rows="10"
+                                required><%= d.mainDescription %></textarea>
+                        </div>
+                        <h5>คำอธิบายย่อย</h5>
+                        <div><textarea name="subDescription" id="subDescription" cols="30" rows="20"
+                                required><%= d.subDescription %></textarea>
+                        </div>
+
+
+                        <button type="submit">Update data</button>
+                    </form>
+
+
+                    <hr>
+
+                    <!--Only update image-->
+
+                    <form method="post" action="/update-product" enctype="multipart/form-data">
+                        <% if (data !="" ) { %>
+
+                            <% let imgs=d.images.split(','); let idImage='' ; let idImageClick='' ; %>
+                                <% for (i=0; i < imgs.length; i++) { idImage='image' + i; idImageClick='imageClick' + i;
+                                    %>
+
+                                    <span>
+                                        <h6 id="<%= idImage %>">
+                                            <%= imgs[i] %>
+                                        </h6>
+                                        <img src="product-images/<%= imgs[i] %>" id="<%= idImageClick %>"
+                                            class="mx-3 my-3 w-25 h-25" alt="Image" onclick="imageSelect()">
+                                    </span>
+                                    <% } %>
+
+                                        <div>
+
+                                            <!--จำนวนรูปภาพ-->
+                                            <input type="hidden" id="qtyImage" value="<%= imgs.length %>">
+
+                                            <% } %>
+                                                <div>เลือกภาพที่ต้องการเปลี่ยน</div>
+                                                <div id="selectImage" class="my-3"
+                                                    style="background-color: rgb(164, 226, 139);">-</div>
+                                                <input type="hidden" id="updateImage" name="updateImage">
+                                                <input type="file" name="upfiles" accept="image/*" required><br>
+                                                <br><br>
+                                                <button type="button" onclick="submitFormImage()">Update image</button>
+                                        </div>
+                    </form>
+
+                    <% } %>
+                        <br><br>
+                        <a id="index" href="/web-management">หน้าหลักจัดการร้าน</a><br><br><br>
+
+
+                        <!-- insert layout/commonBody.ejs file-->
+                        <%- include('layouts/commonBody') %>
+
+                            <script>
+                                // check select picture that need to update
+                                function imageSelect() {
+
+                                    let qtyImage = document.getElementById('qtyImage')
+                                    let qtyImageInt = parseInt(qtyImage.value)
+
+                                    for (let i = 0; i < qtyImageInt; i++) {
+                                        document.getElementById('imageClick' + i).onclick = function () { addressImage(i) }
+
+                                    }
+                                }
+
+                                function addressImage(i) {
+
+                                    let selectImage = document.getElementById('selectImage')
+                                    let image = document.getElementById('image' + i)
+                                    let updateImage = document.getElementById('updateImage')
+
+                                    selectImage.innerHTML = image.innerHTML
+                                    updateImage.value = image.innerHTML // ส่งชื่อรูปภาพที่จะอัพเดตไป server
+
+                                }
+
+                                // โหลดหน้านี้เสร็จให้ทำการเรียก funtion ต่อเพื่ออ่าน id
+
+                                function checklistImage() {
+
+                                    let qtyImage = document.getElementById('qtyImage')
+                                    let qtyImageInt = parseInt(qtyImage.value)
+
+                                    if (qtyImageInt > 0) {
+
+                                        imageSelect()
+                                    }
+                                }
+                            </script>
 
 </body>
 

@@ -270,9 +270,10 @@ app.all('/admin777/update-product', (request, response) => {
 
             //let age = 30 * 60 * 1000 //cookie มีอายุ 30 นาที.
             //response.cookie('userName', userName, { maxAge: age })
+            
 
             request.session.userName = userName // จำผู้ใช้เมื่อ login แล้ว
-            response.render('update-product', { user: userName })
+            response.render('update-product', { user: userName, data: [''] })
         } else {
             response.render('admin777', { msg: 'user name หรือ password ไม่ถูกต้อง' })
         }
@@ -400,14 +401,16 @@ app.all('/add-product', (request, response) => {
 app.all('/update-product', (request, response) => {
 
     let searchProductCode = request.body.searchProductCode || '' //รับค่ารหัสสินค้า เพื่อทำการค้นหา
+    let userName = request.session.userName || ''
 
     if (request.session.userName) {
         // response.render('add-product', { user: userName }) //ถ้า login แล้ว
 
 
         if (request.method == 'GET') {
-            let userName = request.session.userName
-            response.render('update-product', { user: userName })
+            
+
+            response.render('update-product', { user: userName, data: [''] })
             return
         }
 
@@ -415,8 +418,16 @@ app.all('/update-product', (request, response) => {
 
             // อ่านข้อมูล database และนำไปแสดงที่ ช่องข้อมูลแต่ละช่อง
             Product.find({ productCode: new RegExp(searchProductCode, 'i') }).exec((err, docs) => {
+                
+                if (docs == '') { // ถ้า ไม่มีข้อมูลใน database ให้ docs = ว่าง
+
+                    docs = ['']
+                }
                 response.render('update-product', { user: userName, data: docs })
             })
+        } else { // ถ้า search = ว่าง ให้ data = ว่าง
+
+            response.render('update-product', { user: userName, data: [''] })
         }
     } else {
         response.render('web-management') //ถ้าไม่ได้ทำการ login ให้เปิดหน้าทำการ login
