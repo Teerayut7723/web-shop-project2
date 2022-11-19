@@ -86,7 +86,7 @@
 
                         <!--Only update image-->
 
-                        <form method="post" action="" enctype="multipart/form-data">
+                        <form method="post" action="" enctype="multipart/form-data" id="formUpdateImage">
                             <% if (data !="" ) { %>
 
                                 <% let imgs=d.images.split(','); let idImage='' ; let idImageClick='' ; %>
@@ -94,11 +94,11 @@
                                         + i; %>
 
                                         <span>
-                                            <h6 id="<%= idImage %>">
-                                                <%= imgs[i] %>
-                                            </h6>
+                                            <!--ระวังต้องให้ h6 อยู่บรรทัดเดียวกัน-->
+                                            <h6 id="<%= idImage %>"><%= imgs[i] %></h6> 
                                             <img src="product-images/<%= imgs[i] %>" id="<%= idImageClick %>"
-                                                class="mx-3 my-3 w-25 h-25" alt="Image" onclick="imageSelect()">
+                                                class="mx-3 my-3 w-25 h-25 border border-dark" alt="Image"
+                                                onclick="imageSelect()">
                                         </span>
                                         <% } %>
 
@@ -115,7 +115,7 @@
                         <input type="hidden" id="updateImage" name="updateImage">
                         <input type="file" name="upfiles" accept="image/*" required><br>
                         <br><br>
-                        <button type="button" onclick="submitFormImage()">Update image</button>
+                        <button type="submit" onclick="submitImage()" id="btnImageUpdate">Update image</button>
                     </div>
 
 
@@ -147,7 +147,7 @@
 
                                 selectImage.innerHTML = image.innerHTML
                                 updateImage.value = image.innerHTML // ส่งชื่อรูปภาพที่จะอัพเดตไป server
-
+                                
                             }
 
                             // โหลดหน้านี้เสร็จให้ทำการเรียก funtion ต่อเพื่ออ่าน id
@@ -164,12 +164,16 @@
                                     imageSelect()
                                 }
                             }
-
-                            function submitFormImage() {
+                            // ตรวจสอบจำนวนและขนาดไฟน์ ก่อนส่งไปทำการอัพเดต
+                            function submitImage() {
                                 let file = document.querySelector('[type="file"]')
                                 let KB = 1000 //ขนาดไฟน์สูงสุดที่ upload ได้
                                 let maxFileSize = KB * 1024
                                 let selectImage = document.getElementById('selectImage')
+                                let updateImage = document.getElementById('updateImage')
+
+                                let formUpdateImage = document.getElementById('formUpdateImage')
+                                let btnImageUpdate = document.getElementById('btnImageUpdate')
 
                                 if (file.files.length > 1) {
                                     alert('เลือกได้ไม่เกิน 1 ไฟล์')
@@ -184,19 +188,22 @@
                                 }
 
                                 if (selectImage.innerHTML != '-') {
-                                    document.querySelector('form').submit()
+
+                                    btnImageUpdate.type = 'submit'
+                                    formUpdateImage.action = '/image-update'
                                 } else {
                                     alert('ยังไม่ได้เลือกรูปภาพ')
+                                    btnImageUpdate.type = 'button'
                                 }
                             }
 
                             //ส่งค่าไป server ถ้าค่าเท่ากับ textUpdate ให้ทำการอัพเดตข้อมูลใน database
 
                             function updateText() {
-                                
+
                                 let formTextUpdate = document.getElementById('formTextUpdate')
                                 if (confirm('คุณต้องการแก้ไขข้อมูลหรือไม่') == true) {
-                                    
+
                                     formTextUpdate.action = '/text-update'
                                 } else {
                                     formTextUpdate.action = '/update-product'

@@ -451,9 +451,9 @@ app.all('/text-update', (request, response) => {
 
         Product
             .findOneAndUpdate({ productCode: new RegExp(productCode, 'i') }, {
-                name: productName, 
+                name: productName,
                 price: productPrice,
-                productRemain: productRemain, 
+                productRemain: productRemain,
                 mainDescription: productMainDescription,
                 subDescription: productSubDescription
             },
@@ -467,6 +467,69 @@ app.all('/text-update', (request, response) => {
 
 })
 
+// image update in database
+app.all('/image-update', (request, response) => {
+
+    let productCode = request.body.productCode || ''
+    //let updateImage = request.body.updateImage || '' // ชื่อรูปภาพที่จะทำการเปลี่ยน(ตัวเก่า)
+    let userName = request.session.userName || ''
+
+
+    if (request.session.userName) {
+
+        let form = new formidable.IncomingForm({ multiples: true })
+
+        form.parse(request, (err, fields, files) => {
+
+            let upfiles = files.upfiles
+            if (!Array.isArray(files.upfiles)) {
+                if (files.upfiles.name == '') {  //ถ้าไม่ได้เลือกไฟล์
+                    response.render('add-product', { user: userName })
+                    return
+                } else {		                //ถ้าเลือกไฟล์เดียว
+                    upfiles = [files.upfiles]
+                }
+            }
+            
+            const dir = 'public/product-images/'
+            let fileDelete = dir + fields.updateImage // ไฟล์เก่าที่จะทำการลบออก
+            let fileNames = []  //เก็บชื่อของแต่ละไฟล์
+            
+            for (f of upfiles) {
+                let newfile = dir + f.name
+                let newName = f.name
+
+                while (fs.existsSync(newfile)) {
+                    let oldName = f.name.split('.')
+                    let r = Math.floor(Math.random() * 999999)
+                    oldName[0] += '_' + r
+                    newName = oldName.join('.')
+                    newfile = dir + newName
+                }
+                fileNames.push(newName) // file name ที่เพิ่มเข้าไปใหม่
+                //fs.rename(f.path, newfile, err => { })
+                fs.readFile(f.path, function (err, data) {
+                    if (err) { throw err }
+                    //console.log('file read!')
+
+                    fs.writeFile(newfile, data, function (err) {
+                        if (err) { throw err }
+                        //console.log('file written!')
+                    })
+
+                    fs.unlink(fileDelete, function (err) {
+                       if (err) { throw err }
+                        //     console.log('file deleted!')
+                    })
+                })
+            }
+            response.render('update-product', { user: userName, data: [''] })
+            //นำชื่อไฟล์มารวมเป็นสตริงเดียวกัน
+            //let imgFiles = fileNames.join(',')
+        })
+    }
+
+})
 
 // รายละเอียดย่อยของแต่ละสินค้า พร้อมการเลือกจำนวน และสั่งซื้อ
 
