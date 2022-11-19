@@ -21,6 +21,7 @@ const formidable = require('formidable')
 const { request } = require('http')
 const { response } = require('express')
 const { env } = require('process')
+const { model } = require('mongoose')
 
 app.set('view engine', 'ejs')
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -249,7 +250,7 @@ app.all('/admin777/add-product', (request, response) => {
             //response.cookie('userName', userName, { maxAge: age })
 
             request.session.userName = userName // จำผู้ใช้เมื่อ login แล้ว
-            response.render('add-product', { user: userName })
+            response.redirect('/add-product')
         } else {
             response.render('admin777', { msg: 'user name หรือ password ไม่ถูกต้อง' })
         }
@@ -270,10 +271,10 @@ app.all('/admin777/update-product', (request, response) => {
 
             //let age = 30 * 60 * 1000 //cookie มีอายุ 30 นาที.
             //response.cookie('userName', userName, { maxAge: age })
-            
+
 
             request.session.userName = userName // จำผู้ใช้เมื่อ login แล้ว
-            response.render('update-product', { user: userName, data: [''] })
+            response.redirect('/update-product')
         } else {
             response.render('admin777', { msg: 'user name หรือ password ไม่ถูกต้อง' })
         }
@@ -408,7 +409,7 @@ app.all('/update-product', (request, response) => {
 
 
         if (request.method == 'GET') {
-            
+
 
             response.render('update-product', { user: userName, data: [''] })
             return
@@ -418,7 +419,7 @@ app.all('/update-product', (request, response) => {
 
             // อ่านข้อมูล database และนำไปแสดงที่ ช่องข้อมูลแต่ละช่อง
             Product.find({ productCode: new RegExp(searchProductCode, 'i') }).exec((err, docs) => {
-                
+
                 if (docs == '') { // ถ้า ไม่มีข้อมูลใน database ให้ docs = ว่าง
 
                     docs = ['']
@@ -434,6 +435,38 @@ app.all('/update-product', (request, response) => {
     }
 
 })
+
+// text update in database
+app.all('/text-update', (request, response) => {
+
+    let productCode = request.body.productCode || ''
+    let productName = request.body.name || ''
+    let productPrice = request.body.price || ''
+
+    let productRemain = request.body.productRemain || ''
+    let productMainDescription = request.body.mainDescription || ''
+    let productSubDescription = request.body.subDescription || ''
+
+    if (request.session.userName) {
+
+        Product
+            .findOneAndUpdate({ productCode: new RegExp(productCode, 'i') }, {
+                name: productName, 
+                price: productPrice,
+                productRemain: productRemain, 
+                mainDescription: productMainDescription,
+                subDescription: productSubDescription
+            },
+                { useFindAndModify: false })
+            .exec(err => {
+                if (!err) {
+                    response.redirect('/update-product')
+                }
+            })
+    }
+
+})
+
 
 // รายละเอียดย่อยของแต่ละสินค้า พร้อมการเลือกจำนวน และสั่งซื้อ
 

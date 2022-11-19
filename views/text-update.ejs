@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>
+        AP Shopping market - อัพเดตรายละเอียดสินค้า
+    </title>
+    <!-- insert layout/commonHead.ejs file-->
+    <%- include('layouts/commonHead') %>
+        <style>
+            form,
+            a#index {
+                margin: 20px;
+            }
+
+            form input,
+            form textarea {
+                margin-bottom: 20px;
+                width: 500px;
+
+            }
+        </style>
+
+
+</head>
+
+<body>
+
+
+    <h2><u>อัพเดตรายละเอียดสินค้า</u></h2>
+    <br>
+
+    <%# ถ้ามีข้อความส่งมาจากไฟล์หลัก ให้แสดงข้อความนั้น %>
+        <% if (locals.msg ) { %>
+            <div id="result" style="color:red ;">
+                <%= msg %>
+            </div>
+            <% } %>
+
+
+                <script>
+
+                </script>
+                <!-- insert layout/commonBody.ejs file-->
+                <%- include('layouts/commonBody') %>
+
+</body>
+
+</html>

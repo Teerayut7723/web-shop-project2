@@ -28,7 +28,7 @@
             <div class="display-6 bg-light m-5"><u>รายละเอียดสินค้า</u></div>
 
             <div class="d-flex flex-md-row flex-column">
-                <div id="carouselExampleControlsNoTouching" class="carousel slide w-75 p-2" data-bs-touch="true"
+                <div id="carouselExampleControlsNoTouching" class="carousel slide w-75 p-2 border border-dark" data-bs-touch="true"
                     data-bs-interval="false">
                     <div class="carousel-inner">
 
@@ -43,7 +43,7 @@
                                         <img src="/product-images/<%= imgs[i] %>" class="d-block w-100" alt="Image">
                                     </div>
                                     <% } %>
-                                        
+
                                         <% } %>
                     </div>
                     <button class="carousel-control-prev" type="button"
@@ -143,8 +143,18 @@
                 </div>
             </div>
 
-        </div>
+            <br><br>
+            <form action="/" method="post">
 
+                <button type="submit" class="btn btn-primary">กลับหน้าหลัก</button>
+
+            </form>
+            <br><br>
+
+        </div>
+        
+            
+        
 
         <!--Function increase and decrease buy product-->
         <script>
@@ -244,7 +254,7 @@
 
                 priceTotal.innerHTML = 'ราคารวม = ' + (buyTotalNum * pricePerPieceNum).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' บาท'
 
-                document.getElementById('carousel0').setAttribute('class','carousel-item active')
+                document.getElementById('carousel0').setAttribute('class', 'carousel-item active')
             }
 
         </script>
