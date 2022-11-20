@@ -281,6 +281,30 @@ app.all('/admin777/update-product', (request, response) => {
     }
 })
 
+// หน้า admin log-in สำหรับ delete-product
+app.all('/admin777/delete-product', (request, response) => {
+
+    if (!request.body.userName) {
+        response.render('admin777')
+    }
+    else {
+        //อ่านข้อมูลจาก form
+        let userName = request.body.userName || ''
+        let userPassword = request.body.userPassword || ''
+        if (userName == 'aobpan7723' && userPassword == '777') {
+
+            //let age = 30 * 60 * 1000 //cookie มีอายุ 30 นาที.
+            //response.cookie('userName', userName, { maxAge: age })
+
+
+            request.session.userName = userName // จำผู้ใช้เมื่อ login แล้ว
+            response.redirect('/delete-product')
+        } else {
+            response.render('admin777', { msg: 'user name หรือ password ไม่ถูกต้อง' })
+        }
+    }
+})
+
 // หน้า web management จัดการร้าน
 app.all('/web-management', (request, response) => {
 
@@ -470,10 +494,8 @@ app.all('/text-update', (request, response) => {
 // image update in database
 app.all('/image-update', (request, response) => {
 
-    let productCode = request.body.productCode || ''
-    //let updateImage = request.body.updateImage || '' // ชื่อรูปภาพที่จะทำการเปลี่ยน(ตัวเก่า)
-    let userName = request.session.userName || ''
 
+    let userName = request.session.userName || ''
 
     if (request.session.userName) {
 
@@ -490,11 +512,15 @@ app.all('/image-update', (request, response) => {
                     upfiles = [files.upfiles]
                 }
             }
-            
+
             const dir = 'public/product-images/'
-            let fileDelete = dir + fields.updateImage // ไฟล์เก่าที่จะทำการลบออก
+            let updateImage = fields.updateImage //ชื่อภาพที่จะทำการลบออก
+            let fileDelete = dir + updateImage // ไฟล์เก่าที่จะทำการลบออก
             let fileNames = []  //เก็บชื่อของแต่ละไฟล์
-            
+
+            let productCode = fields.codeProduct // code product in hidden input
+
+
             for (f of upfiles) {
                 let newfile = dir + f.name
                 let newName = f.name
@@ -518,15 +544,137 @@ app.all('/image-update', (request, response) => {
                     })
 
                     fs.unlink(fileDelete, function (err) {
-                       if (err) { throw err }
+                        if (err) { throw err }
                         //     console.log('file deleted!')
                     })
                 })
             }
-            response.render('update-product', { user: userName, data: [''] })
+            let listImage = ''
+            if (productCode != undefined) {
+
+                // อ่านข้อมูล database และนำไปแสดงที่ ช่องข้อมูลแต่ละช่อง
+                Product.find({ productCode: new RegExp(productCode, 'i') }).exec((err, docs) => {
+
+                    if (!err) {
+
+                        for (d of docs) {
+                            listImage = d.images
+                        }
+                        let arrListImage = listImage.split(',') //แยกรายชื่อรูปภาพเป็น array
+                        // ถ้าใน database มีชื่อรูปภาพที่จะทำการอัพเดต ให้นำชื่อภาพใหม่ไปแทนที่่
+                        for (i in arrListImage) {
+                            if (arrListImage[i].includes(updateImage)) {
+                                arrListImage[i] = fileNames[0]
+
+                            }
+                        }
+                        let imgFile = arrListImage.join(',')
+                        // นำ list ภาพใหม่ใส่ลงใน database
+                        Product
+                            .findOneAndUpdate({ productCode: new RegExp(productCode, 'i') }, {
+                                images: imgFile,
+                            },
+                                { useFindAndModify: false })
+                            .exec(err => {
+                                if (!err) {
+                                    response.redirect('/update-product')
+                                }
+                            })
+                    }
+                })
+
+            }
+            //response.render('update-product', { user: userName, data: [''] })
             //นำชื่อไฟล์มารวมเป็นสตริงเดียวกัน
             //let imgFiles = fileNames.join(',')
         })
+    }
+
+})
+
+// ลบรายการสินค้าจาก database
+app.all('/delete-product', (request, response) => {
+
+    let searchProductCode = request.body.searchProductCode || '' //รับค่ารหัสสินค้า เพื่อทำการค้นหา
+    let userName = request.session.userName || ''
+
+    if (request.session.userName) {
+        // response.render('add-product', { user: userName }) //ถ้า login แล้ว
+
+
+        if (request.method == 'GET') {
+
+
+            response.render('delete-product', { user: userName, data: [''] })
+            return
+        }
+
+        if (searchProductCode != '') {
+
+            // อ่านข้อมูล database และนำไปแสดงที่ ช่องข้อมูลแต่ละช่อง
+            Product.find({ productCode: new RegExp(searchProductCode, 'i') }).exec((err, docs) => {
+
+                if (docs == '') { // ถ้า ไม่มีข้อมูลใน database ให้ docs = ว่าง
+
+                    docs = ['']
+                }
+                response.render('delete-product', { user: userName, data: docs })
+            })
+        } else { // ถ้า search = ว่าง ให้ data = ว่าง
+
+            response.render('delete-product', { user: userName, data: [''] })
+        }
+    } else {
+        response.render('web-management') //ถ้าไม่ได้ทำการ login ให้เปิดหน้าทำการ login
+    }
+
+})
+
+// delete data product in database
+
+app.all('/delete-data', (request, response) => {
+
+    //let userName = request.session.userName || ''
+    let productCode = request.body.productCode || ''
+
+    if (request.session.userName) {
+
+
+        const dir = 'public/product-images/'
+        let listImage = ''
+
+        Product.find({ productCode: new RegExp(productCode, 'i') }).exec((err, docs) => {
+
+            if (!err) {
+                //Read list image
+                for (d of docs) {
+                    listImage = d.images
+                }
+                let arrListImage = listImage.split(',') //แยกรายชื่อรูปภาพเป็น array
+                // กำหนด directory ที่จะลบของแต่ละภาพและทำการลบออกจาก server
+                for (i in arrListImage) {
+                    let fileDelete = ''
+
+                    fileDelete = dir + arrListImage[i]
+
+                    fs.unlink(fileDelete, function (err) {
+                        if (err) { throw err }
+                        //     console.log('file deleted!')
+                    })
+                }
+
+                // delect data in database
+                Product
+                .findOneAndDelete({ productCode: new RegExp(productCode, 'i') }, {useFindAndModify: false})
+                .exec(err => {
+                    if (!err) {
+                        response.redirect('/delete-product')
+                    }
+                })
+                
+            }
+        })
+
     }
 
 })

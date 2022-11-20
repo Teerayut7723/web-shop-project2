@@ -59,7 +59,7 @@
                     <div>
                         <form method="post" action="" id="formTextUpdate">
                             <input type="text" name="productCode" placeholder="รหัสสินค้า" required
-                                value="<%= d.productCode%>">
+                                value="<%= d.productCode %>">
                             :รหัสสินค้า<br>
                             <input type="text" name="name" placeholder="ชื่อสินค้า" required value="<%= d.name %>">
                             :ชื่อสินค้า<br>
@@ -94,7 +94,7 @@
                                         + i; %>
 
                                         <span>
-                                            <!--ระวังต้องให้ h6 อยู่บรรทัดเดียวกัน-->
+                                            <!--ระวังต้องให้ h6 อยู่บรรทัดเดียวกันเพราะใช้ innerHTML จะหาข้อมูลไม่เจอเพราะมีช่องว่าง-->
                                             <h6 id="<%= idImage %>"><%= imgs[i] %></h6> 
                                             <img src="product-images/<%= imgs[i] %>" id="<%= idImageClick %>"
                                                 class="mx-3 my-3 w-25 h-25 border border-dark" alt="Image"
@@ -106,7 +106,7 @@
 
                                                 <!--จำนวนรูปภาพ-->
                                                 <input type="hidden" id="qtyImage" value="<%= imgs.length %>">
-
+                                                <input type="hidden" id="codeProduct" name="codeProduct" value="<%= d.productCode %>">
                                                 <% } %>
                         </form>
 

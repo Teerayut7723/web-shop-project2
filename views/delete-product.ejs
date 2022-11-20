@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>
+        AP Shopping market - อัพเดตรายละเอียดสินค้า
+    </title>
+    <!-- insert layout/commonHead.ejs file-->
+    <%- include('layouts/commonHead') %>
+        <style>
+            form,
+            a#index {
+                margin: 20px;
+            }
+
+            form input,
+            form textarea {
+                margin-bottom: 20px;
+                width: 500px;
+
+            }
+        </style>
+
+
+</head>
+
+<body>
+
+    <div class="display-4 bg-success">Hello <%=user %>
+    </div>
+
+    <h2><u>อัพเดตรายละเอียดสินค้า</u></h2>
+    <br>
+
+    <%# ถ้ามีข้อความส่งมาจากไฟล์หลัก ให้แสดงข้อความนั้น %>
+        <% if (locals.msg ) { %>
+            <div id="result" style="color:red ;">
+                <%= msg %>
+            </div>
+            <% } %>
+
+                <div>
+                    <nav class="navbar navbar-dark bg-primary">
+                        <div class="container">
+                            <form action="/delete-product" method="post" class="d-flex" role="search">
+                                <input class="form-control me-2" type="search" name="searchProductCode"
+                                    placeholder="ใส่รหัสสินค้า 6 หลัก" aria-label="Search" style="width: 400px;">
+                                <button class="btn btn-outline-light w-50 h-25" type="submit">ค้นหา</button>
+                            </form>
+                        </div>
+                    </nav>
+                </div>
+
+                <% for (d of data) { %>
+
+                    <div>
+                        <form method="post" action="" id="formDeleteProduct">
+                            <input type="text" name="productCode" placeholder="รหัสสินค้า" required
+                                value="<%= d.productCode %>">
+                            :รหัสสินค้า<br>
+                            <input type="text" name="name" placeholder="ชื่อสินค้า" required value="<%= d.name %>">
+                            :ชื่อสินค้า<br>
+                            <input type="number" name="price" placeholder="ราคาสินค้า" required value="<%= d.price %>">
+                            :ราคาสินค้า<br>
+                            <input type="number" name="productRemain" placeholder="สินค้าคงเหลือ" required
+                                value="<%= d.productRemain %>">
+                            :สินค้าคงเหลือ<br>
+                            <h5>คำอธิบายหลัก</h5>
+                            <div><textarea name="mainDescription" id="mainDescription" cols="30" rows="10"
+                                    required><%= d.mainDescription %></textarea>
+                            </div>
+                            <h5>คำอธิบายย่อย</h5>
+                            <div><textarea name="subDescription" id="subDescription" cols="30" rows="20"
+                                    required><%= d.subDescription %></textarea>
+                            </div>
+
+                            <hr>
+
+                            <!--image show list-->
+
+                            <% if (data !="" ) { %>
+
+                                <% let imgs=d.images.split(','); let idImage='' ; let idImageClick='' ; %>
+                                    <% for (i=0; i < imgs.length; i++) { idImage='image' + i; idImageClick='imageClick'
+                                        + i; %>
+
+                                        <span>
+                                            <h6 id="<%= idImage %>">
+                                                <%= imgs[i] %>
+                                            </h6>
+                                            <img src="product-images/<%= imgs[i] %>" id="<%= idImageClick %>"
+                                                class="mx-3 my-3 w-25 h-25 border border-dark" alt="Image"
+                                                onclick="imageSelect()">
+                                        </span>
+                                        <% } %>
+
+                                            <div>
+                                                <% } %>
+                        </form>
+
+                        <button type="submit" onclick="deleteData()" id="btnDeleteData">Delete product</button>
+                    </div>
+
+
+                    <% } %>
+                        <br><br>
+                        <a id="index" href="/web-management">หน้าหลักจัดการร้าน</a><br><br><br>
+
+
+                    <script>
+
+                        // submit delete product
+
+                        function deleteData() {
+                            let formDeleteProduct = document.getElementById('formDeleteProduct')
+                            let btnDeleteData = document.getElementById('btnDeleteData')
+
+                            if (confirm('ต้องการลบข้อมูลหรือไม่') == true) {
+                                btnDeleteData.type = 'submit'
+                                formDeleteProduct.action = '/delete-data'
+                            } else {
+                                btnDeleteData.type = 'button'
+                            }
+                        }
+                    </script>
+                        <!-- insert layout/commonBody.ejs file-->
+                        <%- include('layouts/commonBody') %>
+
+</body>
+
+</html>
