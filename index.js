@@ -1149,12 +1149,13 @@ app.all('/test', (request, response) => {
                 subject: 'Sending Email using Node.js 777',
                 //text: 'That was easy!'
                 //html: '<h1>Welcome</h1><p>That was easy!</p>',
-                html: '<div><h2>test text </h2></div> <img src="cid:777@create.ee"/>' + '<div>' + test + '</div>',
+                //html: '<div><h2>test text </h2></div> <img src="cid:777@create.ee"/>' + '<div>' + test + '</div>',
+                html: '<div><h2>test text </h2></div>' + '<div>' + test + '</div>',
                 attachments: [{
                     'filename': upfile.name,
                     path: newfile,
                     //'content': upfile.path,
-                    'cid': '777@create.ee' //same cid value as in the html img src
+                    //'cid': '777@create.ee' //same cid value as in the html img src
                 }]
             };
 
