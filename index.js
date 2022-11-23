@@ -665,15 +665,15 @@ app.all('/delete-data', (request, response) => {
 
                 // delect data in database
                 Product
-                .findOneAndDelete({ productCode: new RegExp(productCode, 'i') }, {useFindAndModify: false})
-                .exec(err => {
-                    if (!err) {
-                        response.redirect('/delete-product')
-                    }
-                })
-                
+                    .findOneAndDelete({ productCode: new RegExp(productCode, 'i') }, { useFindAndModify: false })
+                    .exec(err => {
+                        if (!err) {
+                            response.redirect('/delete-product')
+                        }
+                    })
+
             }
-            
+
         })
 
     }
@@ -1098,7 +1098,7 @@ app.all('/test', (request, response) => {
     let form = new formidable.IncomingForm()
     form.parse(request, (err, fields, files) => {
 
-        
+
         const dir = 'public/upload/'
 
         if (!err) {
@@ -1115,60 +1115,60 @@ app.all('/test', (request, response) => {
             }
 
 
-             fs.readFile(upfile.path, function (err, data) {
-                 if (err) { throw err }
-            //     console.log('file read!')
+            fs.readFile(upfile.path, function (err, data) {
+                if (err) { throw err }
+                //     console.log('file read!')
 
-             fs.writeFile(newfile, data, function (err) {
-                 if (err) { throw err }
-            //     console.log('file written!')
-             })
+                fs.writeFile(newfile, data, function (err) {
+                    if (err) { throw err }
+                    //     console.log('file written!')
+                })
 
-            // fs.unlink(upfile.path,function (err) {
-            //     if (err) {throw err}
-            //     console.log('file deleted!')
-             })
-
-
-            //console.log(form)
-            var transporter = nodemailer.createTransport({
-                service: 'outlook',
-                auth: {
-                    user: process.env.AUTH_EMAIL || 'teerayut7723@outlook.com',
-                    pass: process.env.AUTH_PASS || 'aaa@12345'
-                },
-                tls: {
-                    // do not fail on invalid certs
-                    rejectUnauthorized: false,
-                },
-            });
-            var test = 77777
-            var mailOptions = {
-                from: 'teerayut7723@outlook.com',
-                to: 'teerayut7723@gmail.com',
-                subject: 'Sending Email using Node.js 777',
-                //text: 'That was easy!'
-                //html: '<h1>Welcome</h1><p>That was easy!</p>',
-                //html: '<div><h2>test text </h2></div> <img src="cid:777@create.ee"/>' + '<div>' + test + '</div>',
-                html: '<div><h2>test text </h2></div>' + '<div>' + test + '</div>',
-                attachments: [{
-                    'filename': upfile.name,
-                    path: newfile,
-                    //'content': upfile.path,
-                    //'cid': '777@create.ee' //same cid value as in the html img src
-                }]
-            };
-
-            transporter.sendMail(mailOptions, function (error, info) {
-                if (error) {
-                    console.log(error);
-                } else {
-                    console.log('Email sent: ' + info.response);
-                }
-            });
-            // })
+                // fs.unlink(upfile.path,function (err) {
+                //     if (err) {throw err}
+                //     console.log('file deleted!')
+            })
         }
     })
+    //console.log(form)
+    var transporter = nodemailer.createTransport({
+        service: 'outlook',
+        auth: {
+            user: process.env.AUTH_EMAIL || 'teerayut7723@outlook.com',
+            pass: process.env.AUTH_PASS || 'aaa@12345'
+        },
+        tls: {
+            // do not fail on invalid certs
+            rejectUnauthorized: false,
+        },
+    });
+    var test = 77777
+    var mailOptions = {
+        from: 'teerayut7723@outlook.com',
+        to: 'teerayut7723@gmail.com',
+        subject: 'Sending Email using Node.js 777',
+        //text: 'That was easy!'
+        //html: '<h1>Welcome</h1><p>That was easy!</p>',
+        //html: '<div><h2>test text </h2></div> <img src="cid:777@create.ee"/>' + '<div>' + test + '</div>',
+        html: '<div><h2>test text </h2></div>' + '<div>' + test + '</div>',
+        attachments: [{
+            'filename': upfile.name,
+            path: newfile,
+            //'content': upfile.path,
+            //'cid': '777@create.ee' //same cid value as in the html img src
+        }]
+    };
+
+    transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log('Email sent: ' + info.response);
+        }
+    });
+    // })
+
+
     response.render('buy-products', { dataAddress: addressOrder, dataGrandPrice: '77' })
 })
 
