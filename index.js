@@ -1095,7 +1095,7 @@ app.all('/test', (request, response) => {
 
     let addressOrder = request.session.addressOrder || [] // เก็บข้อมูลที่อยู่ของ user
 
-    let form = new formidable.IncomingForm()
+    let form = new formidable.IncomingForm({ multiples: false })
     form.parse(request, (err, fields, files) => {
 
 
