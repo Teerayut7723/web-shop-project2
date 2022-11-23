@@ -1098,23 +1098,36 @@ app.all('/test', (request, response) => {
     let form = new formidable.IncomingForm()
     form.parse(request, (err, fields, files) => {
 
+        
+        const dir = 'public/upload/'
+
         if (!err) {
             let upfile = files.upfile
+            let newfile = dir + upfile.name
+            let newName = upfile.name
+
+            while (fs.existsSync(newfile)) {
+                let oldName = upfile.name.split('.')
+                let r = Math.floor(Math.random() * 999999)
+                oldName[0] += '_' + r
+                newName = oldName.join('.')
+                newfile = dir + newName
+            }
 
 
-            // fs.readFile(upfile.path, function (err, data) {
-            //     if (err) { throw err }
+             fs.readFile(upfile.path, function (err, data) {
+                 if (err) { throw err }
             //     console.log('file read!')
 
-            // fs.writeFile(newfile, data, function (err) {
-            //     if (err) { throw err }
+             fs.writeFile(newfile, data, function (err) {
+                 if (err) { throw err }
             //     console.log('file written!')
-            // })
+             })
 
             // fs.unlink(upfile.path,function (err) {
             //     if (err) {throw err}
             //     console.log('file deleted!')
-            // })
+             })
 
 
             //console.log(form)
@@ -1139,7 +1152,7 @@ app.all('/test', (request, response) => {
                 html: '<div><h2>test text </h2></div> <img src="cid:777@create.ee"/>' + '<div>' + test + '</div>',
                 attachments: [{
                     'filename': upfile.name,
-                    path: upfile.path,
+                    path: newfile,
                     //'content': upfile.path,
                     'cid': '777@create.ee' //same cid value as in the html img src
                 }]
