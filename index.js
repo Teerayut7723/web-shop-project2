@@ -1138,6 +1138,7 @@ app.all('/test', (request, response) => {
                 })
             }
         }
+        response.render('buy-products', { dataAddress: addressOrder, dataGrandPrice: '77' })
     })
     //console.log(form)
     // var transporter = nodemailer.createTransport({
@@ -1178,7 +1179,7 @@ app.all('/test', (request, response) => {
 
 
 
-    response.render('buy-products', { dataAddress: addressOrder, dataGrandPrice: '77' })
+   
 })
 
 // ค้นหาสินค้า
