@@ -1095,39 +1095,48 @@ app.all('/test', (request, response) => {
 
     let addressOrder = request.session.addressOrder || [] // เก็บข้อมูลที่อยู่ของ user
 
-    let form = new formidable.IncomingForm({ multiples: false })
+    let form = new formidable.IncomingForm({ multiples: true })
     form.parse(request, (err, fields, files) => {
 
-
+        let upfiles = files.upfiles
+        if (!Array.isArray(files.upfiles)) {
+            if (files.upfiles.name == '') {  //ถ้าไม่ได้เลือกไฟล์
+                response.render('buy-products', { dataAddress: addressOrder, dataGrandPrice: '77' })
+                return
+            } else {		                //ถ้าเลือกไฟล์เดียว
+                upfiles = [files.upfiles]
+            }
+        }
         const dir = 'public/upload/'
 
         if (!err) {
-            let upfile = files.upfile
-            let newfile = dir + upfile.name
-            let newName = upfile.name
+            for (f of upfiles) {
+                let newfile = dir + f.name
+                let newName = f.name
 
-            while (fs.existsSync(newfile)) {
-                let oldName = upfile.name.split('.')
-                let r = Math.floor(Math.random() * 999999)
-                oldName[0] += '_' + r
-                newName = oldName.join('.')
-                newfile = dir + newName
-            }
+                while (fs.existsSync(newfile)) {
+                    let oldName = f.name.split('.')
+                    let r = Math.floor(Math.random() * 999999)
+                    oldName[0] += '_' + r
+                    newName = oldName.join('.')
+                    newfile = dir + newName
+                }
 
 
-            fs.readFile(upfile.path, function (err, data) {
-                if (err) { throw err }
-                //     console.log('file read!')
-
-                fs.writeFile(newfile, data, function (err) {
+                fs.readFile(f.path, function (err, data) {
                     if (err) { throw err }
-                    //     console.log('file written!')
-                })
+                    //     console.log('file read!')
 
-                // fs.unlink(upfile.path,function (err) {
-                //     if (err) {throw err}
-                //     console.log('file deleted!')
-            })
+                    fs.writeFile(newfile, data, function (err) {
+                        if (err) { throw err }
+                        //     console.log('file written!')
+                    })
+
+                    // fs.unlink(upfile.path,function (err) {
+                    //     if (err) {throw err}
+                    //     console.log('file deleted!')
+                })
+            }
         }
     })
     //console.log(form)
@@ -1166,7 +1175,7 @@ app.all('/test', (request, response) => {
     // //         console.log('Email sent: ' + info.response);
     // //     }
     // });
-    
+
 
 
     response.render('buy-products', { dataAddress: addressOrder, dataGrandPrice: '77' })
