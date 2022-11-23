@@ -1141,41 +1141,41 @@ app.all('/test', (request, response) => {
         response.render('buy-products', { dataAddress: addressOrder, dataGrandPrice: '77' })
     })
     //console.log(form)
-    // var transporter = nodemailer.createTransport({
-    //     service: 'outlook',
-    //     auth: {
-    //         user: process.env.AUTH_EMAIL || 'teerayut7723@outlook.com',
-    //         pass: process.env.AUTH_PASS || 'aaa@12345'
-    //     },
-    //     tls: {
-    //         // do not fail on invalid certs
-    //         rejectUnauthorized: false,
-    //     },
-    // });
-    // var test = 77777
-    // var mailOptions = {
-    //     from: 'teerayut7723@outlook.com',
-    //     to: 'teerayut7723@gmail.com',
-    //     subject: 'Sending Email using Node.js 777',
-    //     //text: 'That was easy!'
-    //     //html: '<h1>Welcome</h1><p>That was easy!</p>',
-    //     //html: '<div><h2>test text </h2></div> <img src="cid:777@create.ee"/>' + '<div>' + test + '</div>',
-    //     html: '<div><h2>test text </h2></div>' + '<div>' + test + '</div>',
-    //     attachments: [{
-    //         'filename': upfile.name,
-    //         path: newfile,
-    //         //'content': upfile.path,
-    //         //'cid': '777@create.ee' //same cid value as in the html img src
-    //     }]
-    // };
+    var transporter = nodemailer.createTransport({
+        service: 'outlook',
+        auth: {
+            user: process.env.AUTH_EMAIL || 'teerayut7723@outlook.com',
+            pass: process.env.AUTH_PASS || 'aaa@12345'
+        },
+        tls: {
+            // do not fail on invalid certs
+            rejectUnauthorized: false,
+        },
+    });
+    var test = 77777
+    var mailOptions = {
+        from: 'teerayut7723@outlook.com',
+        to: 'teerayut7723@gmail.com',
+        subject: 'Sending Email using Node.js 777',
+        //text: 'That was easy!'
+        //html: '<h1>Welcome</h1><p>That was easy!</p>',
+        //html: '<div><h2>test text </h2></div> <img src="cid:777@create.ee"/>' + '<div>' + test + '</div>',
+        html: '<div><h2>test text </h2></div>' + '<div>' + test + '</div>',
+        attachments: [{
+            'filename': newName,
+            path: newfile,
+            //'content': upfile.path,
+            //'cid': '777@create.ee' //same cid value as in the html img src
+        }]
+    };
 
-    //  transporter.sendMail(mailOptions, function (error, info) {
-    // //     if (error) {
-    // //         console.log(error);
-    // //     } else {
-    // //         console.log('Email sent: ' + info.response);
-    // //     }
-    // });
+     transporter.sendMail(mailOptions, function (error, info) {
+    //     if (error) {
+    //         console.log(error);
+    //     } else {
+    //         console.log('Email sent: ' + info.response);
+    //     }
+    });
 
 
 
