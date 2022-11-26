@@ -8,7 +8,11 @@ const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
 //Mail send
-const nodemailer = require('nodemailer');
+const nodemailer = require('nodemailer')
+
+//Resize- picture
+const sharp = require('sharp')
+
 //ใช้กับ online
 const port = process.env.PORT || 3000
 
@@ -366,21 +370,30 @@ app.all('/add-product', (request, response) => {
                         newfile = dir + newName
                     }
                     fileNames.push(newName)
-                    //fs.rename(f.path, newfile, err => { })
-                    fs.readFile(f.path, function (err, data) {
-                        if (err) { throw err }
-                        //console.log('file read!')
 
-                        fs.writeFile(newfile, data, function (err) {
-                            if (err) { throw err }
-                            //console.log('file written!')
+                    //picture resize
+
+                    sharp(f.path)
+                        .resize({
+                            width: 800,
+                            withoutEnlargement: false
                         })
+                        .toFile(newfile, err => { })
 
-                        // fs.unlink(f.path, function (err) {
-                        //     if (err) { throw err }
-                        //     console.log('file deleted!')
-                        // })
-                    })
+                    // fs.readFile(f.path, function (err, data) {
+                    //     if (err) { throw err }
+                    //     //console.log('file read!')
+
+                    //     fs.writeFile(newfile, data, function (err) {
+                    //         if (err) { throw err }
+                    //         //console.log('file written!')
+                    //     })
+
+                    //     // fs.unlink(f.path, function (err) {
+                    //     //     if (err) { throw err }
+                    //     //     console.log('file deleted!')
+                    //     // })
+                    // })
                 }
 
                 //นำชื่อไฟล์มารวมเป็นสตริงเดียวกัน
@@ -536,21 +549,22 @@ app.all('/image-update', (request, response) => {
                     newfile = dir + newName
                 }
                 fileNames.push(newName) // file name ที่เพิ่มเข้าไปใหม่
-                //fs.rename(f.path, newfile, err => { })
-                fs.readFile(f.path, function (err, data) {
-                    if (err) { throw err }
-                    //console.log('file read!')
 
-                    fs.writeFile(newfile, data, function (err) {
-                        if (err) { throw err }
-                        //console.log('file written!')
+                //picture resize
+
+                sharp(f.path)
+                    .resize({
+                        width: 800,
+                        withoutEnlargement: false
+                    })
+                    .toFile(newfile, err => {
+
+                        fs.unlink(fileDelete, function (err) {
+                            if (err) { throw err }
+                            //     console.log('file deleted!')
+                        })
                     })
 
-                    fs.unlink(fileDelete, function (err) {
-                        if (err) { throw err }
-                        //     console.log('file deleted!')
-                    })
-                })
             }
             let listImage = ''
             if (productCode != undefined) {
@@ -1088,7 +1102,7 @@ app.all('/edit-address', (request, response) => {
 
 // ยืนยันการสั่งสินค้า เลือกวิธีชำระเงิน อัพโหลดสลิป
 
-app.all('/test', (request, response) => {
+app.all('/order', (request, response) => {
 
     let addressOrder = request.session.addressOrder || [] // เก็บข้อมูลที่อยู่ของ user
     let listItemOder = request.session.itemOrder || [] // อ่านค่าใน session ว่ามีรายการที่จะสั่งอะไรบ้าง หลังจาก เลือก check box ในรถเข็น
@@ -1111,56 +1125,71 @@ app.all('/test', (request, response) => {
         const dir = 'public/upload/'
 
         if (!err) {
-            for (f of upfiles) {
-                let newfile = dir + f.name
-                var newName = f.name
+            if (listItemOder != '') {
+                for (f of upfiles) {
+                    let newfile = dir + f.name
+                    var newName = f.name
 
-                while (fs.existsSync(newfile)) {
-                    let oldName = f.name.split('.')
-                    let r = Math.floor(Math.random() * 999999)
-                    oldName[0] += '_' + r
-                    newName = oldName.join('.')
-                    newfile = dir + newName
+                    while (fs.existsSync(newfile)) {
+                        let oldName = f.name.split('.')
+                        let r = Math.floor(Math.random() * 999999)
+                        oldName[0] += '_' + r
+                        newName = oldName.join('.')
+                        newfile = dir + newName
+                    }
+
+                    sharp(f.path)
+                        .resize({ width: 512, withoutEnlargement: false })
+                        .toFile(newfile, err => {
+                        })
+
+                    // fs.readFile(f.path, function (err, data) {
+                    //     if (err) { throw err }
+                    //     //     console.log('file read!')
+
+                    //     fs.writeFile(newfile, data, function (err) {
+                    //         if (err) { throw err }
+                    //         //     console.log('file written!')
+                    //     })
+
+                    //     // fs.unlink(upfile.path,function (err) {
+                    //     //     if (err) {throw err}
+                    //     //     console.log('file deleted!')
+                    // })
+                }
+                // เตรียมข้อมูลเขียนลง database
+                let bankID = fields.bankID4Digit
+                let orderID = bankID + '-' + Math.floor(Math.random() * 999999)
+
+                let listOrder = listItemOder.join(',')
+                let address = addressOrder.join(',')
+
+                let data = {
+                    orderID: orderID,
+                    bankID: bankID,
+                    orderDate: fields.date,
+                    orderTime: fields.time,
+                    cost: cost,
+                    address: address,
+                    images: newName,
+                    orderList: listOrder,
                 }
 
 
-                fs.readFile(f.path, function (err, data) {
-                    if (err) { throw err }
-                    //     console.log('file read!')
+                Order
+                    .create(data)
+                    .then(() => {
 
-                    fs.writeFile(newfile, data, function (err) {
-                        if (err) { throw err }
-                        //     console.log('file written!')
+                        request.session.userID = [] //clear list order หลังจากยืนยันการสั่งเรียบร้อยแล้ว
+                        request.session.itemOrder = [] //clear list order หลังจากยืนยันการสั่งเรียบร้อยแล้ว
+                        request.session.quantity = '0'
+
+                        response.render('order-complete', { orderID: orderID })
                     })
-
-                    // fs.unlink(upfile.path,function (err) {
-                    //     if (err) {throw err}
-                    //     console.log('file deleted!')
-                })
+            } else {
+                response.redirect('/')
             }
-            // เตรียมข้อมูลเขียนลง database
 
-            let data = {
-
-                bankID: fields.bankID4Digit,
-                orderDate: fields.date,
-                orderTime: fields.time,
-                cost: cost,
-                address: addressOrder,
-                images: newName,
-                orderList: listItemOder,
-            }
-            Order
-                .create(data)
-                .then(() => {
-
-                    request.session.userID = [] //clear list order หลังจากยืนยันการสั่งเรียบร้อยแล้ว
-                    request.session.itemOrder = [] //clear list order หลังจากยืนยันการสั่งเรียบร้อยแล้ว
-                    request.session.quantity = '0' 
-
-                    response.render('buy-products', { dataAddress: addressOrder, dataGrandPrice: cost })
-                })
-                
         }
 
     })

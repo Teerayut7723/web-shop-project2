@@ -7,13 +7,14 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://admin:072193706@clust
 }).catch(err => console.log(err))
 
 const orderSchema = new mongoose.Schema({
+    orderID: {type: String, required: true},
     bankID: {type: String, required: true, minlength: 4, trim: true },
     orderDate: {type: String, required: true },
     orderTime: {type: String, required: true },
     cost: {type: String, required: true},
-    address: {type: Array, required: true},  
+    address: {type: String, required: true},  
     images: {type: String, required: true},
-    orderList: {type: Array, required:true},
+    orderList: {type: String, required:true},
 })
 
 

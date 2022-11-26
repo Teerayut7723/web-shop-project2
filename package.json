@@ -36,10 +36,17 @@
   "nodemon": "^2.0.19",
   
     
-  "serve-favicon": "^2.5.0"
+  "serve-favicon": "^2.5.0",
+  
+    
+  "sharp": "^0.31.2"
   
   },
+  
   "engines": {
-    "node": "16.15.0"
+  
+    
+  "node": "16.15.0"
+  
   }
 }

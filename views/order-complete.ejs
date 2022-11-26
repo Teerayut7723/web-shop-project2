@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>สั่งซื้อเสร็จสิ้น</title>
+
+
+    <!-- insert layout/commonHead.ejs file-->
+    <%- include('layouts/commonHead') %>
+
+
+</head>
+
+้
+
+<body>
+    <div class="container bg-light">
+
+        <div>
+            <h1 style="background-color: rgb(83, 142, 219);">ยืนยันการสั่งซื้อเรียบร้อยแล้ว</h1>
+        </div>
+        <% if (locals.orderID) { %>
+            <div>
+                <span>
+                    <h5>เลขที่สั่งสินค้าของคุณคือ: </h5>
+                </span><span>
+                    <%= orderID %>
+                </span>
+            </div>
+
+            <% } %>
+                <form action="/" method="post" class="mt-5">
+
+                    <button type="submit" class="btn btn-primary">กลับหน้าหลัก</button>
+
+                </form>
+    </div>
+
+    <!-- insert layout/commonBody.ejs file-->
+    <%- include('layouts/commonBody') %>
+</body>
+
+</html>
