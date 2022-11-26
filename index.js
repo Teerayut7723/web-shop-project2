@@ -312,6 +312,30 @@ app.all('/admin777/delete-product', (request, response) => {
     }
 })
 
+// หน้า admin log-in สำหรับ order-product
+app.all('/admin777/order-product', (request, response) => {
+
+    if (!request.body.userName) {
+        response.render('admin777')
+    }
+    else {
+        //อ่านข้อมูลจาก form
+        let userName = request.body.userName || ''
+        let userPassword = request.body.userPassword || ''
+        if (userName == 'aobpan7723' && userPassword == '777') {
+
+            //let age = 30 * 60 * 1000 //cookie มีอายุ 30 นาที.
+            //response.cookie('userName', userName, { maxAge: age })
+
+
+            request.session.userName = userName // จำผู้ใช้เมื่อ login แล้ว
+            response.redirect('/order-product')
+        } else {
+            response.render('admin777', { msg: 'user name หรือ password ไม่ถูกต้อง' })
+        }
+    }
+})
+
 // หน้า web management จัดการร้าน
 app.all('/web-management', (request, response) => {
 
@@ -696,6 +720,66 @@ app.all('/delete-data', (request, response) => {
     }
 
 })
+
+// ดูรายการสั่งสินค้าของลูกค้า
+app.all('/order-product', (request, response) => {
+
+    let searchBankID = request.body.searchBankID || '' //รับค่า keyword BankID เพื่อทำการค้นหา
+    let searchOrderID = request.body.searchOrderID || '' //รับค่า keyword OrderID เพื่อทำการค้นหา
+    let searchName = request.body.searchName || '' //รับค่า keyword Name เพื่อทำการค้นหา
+
+    let userName = request.session.userName || ''
+
+    if (request.session.userName) {
+        // response.render('add-product', { user: userName }) //ถ้า login แล้ว
+
+
+        if (request.method == 'GET') {
+
+
+            response.render('order-product', { user: userName })
+            return
+        }
+        if (searchBankID != '') {
+            Order
+                .find({ bankID: new RegExp(searchBankID, 'i') })
+                .exec((err, docs) => {
+
+                    console.log(docs)
+                    response.render('order-product', { user: userName })
+                })
+        } else if (searchOrderID != '') {
+            Order
+                .find({ orderID: new RegExp(searchOrderID, 'i') })
+                .exec((err, docs) => {
+
+                    console.log(docs)
+                    response.render('order-product', { user: userName })
+                })
+        } else if (searchName != '') {
+            Order
+                .find({ address: new RegExp(searchName, 'i') })
+                .exec((err, docs) => {
+
+                    console.log(docs)
+                    response.render('order-product', { user: userName })
+                })
+        } else { // หาทั้งหมด
+            Order
+                .find()
+                .exec((err, docs) => {
+
+                    console.log(docs)
+                    response.render('order-product', { user: userName })
+                })
+        }
+
+    } else {
+        response.render('web-management') //ถ้าไม่ได้ทำการ login ให้เปิดหน้าทำการ login
+    }
+
+})
+
 
 // รายละเอียดย่อยของแต่ละสินค้า พร้อมการเลือกจำนวน และสั่งซื้อ
 

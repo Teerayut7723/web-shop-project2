@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>
+        AP Shopping market - ดูรายการสั่งสินค้า
+    </title>
+    <!-- insert layout/commonHead.ejs file-->
+    <%- include('layouts/commonHead') %>
+
+
+</head>
+
+<body>
+
+    <div class="display-4 bg-success">Hello <%=user %>
+    </div>
+
+    <h2><u>ดูรายการสั่งสินค้า</u></h2>
+    <br>
+
+    <%# ถ้ามีข้อความส่งมาจากไฟล์หลัก ให้แสดงข้อความนั้น %>
+        <% if (locals.msg ) { %>
+            <div id="result" style="color:red ;">
+                <%= msg %>
+            </div>
+            <% } %>
+
+                <div>
+                    <nav class="navbar navbar-dark bg-primary">
+                        <div class="container">
+                            <form action="/order-product" method="post" class="d-flex" role="search">
+
+                                <input class="form-control me-2" type="search" name="searchBankID"
+                                    placeholder="ใส่รหัสธนาคาร 4 ตัวท้าย" aria-label="Search" style="width: 200px;">
+
+                                <button class="btn btn-outline-light w-50 h-25" type="submit">ค้นหา</button>
+                            </form>
+                        </div>
+                    </nav>
+                    <div style="color:black;">หรือ</div>
+                    <nav class="navbar navbar-dark bg-success">
+                        <div class="container">
+                            <form action="/order-product" method="post" class="d-flex" role="search">
+
+                                <input class="form-control me-2" type="search" name="searchOrderID"
+                                    placeholder="ใส่เลขที่การสั่งสินค้า" aria-label="Search" style="width: 200px;">
+
+                                <button class="btn btn-outline-light w-50 h-25" type="submit">ค้นหา</button>
+                            </form>
+                        </div>
+                    </nav>
+
+                    <div style="color:black;">หรือ</div>
+                    <nav class="navbar navbar-dark bg-success opacity-75">
+                        <div class="container">
+                            <form action="/order-product" method="post" class="d-flex" role="search">
+
+                                <input class="form-control me-2" type="search" name="searchName"
+                                    placeholder="ใส่ชื่อลูกค้า" aria-label="Search" style="width: 200px;">
+
+                                <button class="btn btn-outline-light w-50 h-25" type="submit">ค้นหา</button>
+                            </form>
+                        </div>
+                    </nav>
+
+                    <div style="color:black;">หรือ</div>
+                    <nav class="navbar navbar-dark bg-primary opacity-75">
+                        <div class="container">
+                            <form action="/order-product" method="post" class="d-flex" role="search">
+                                <label for="searchDateStart" style="color:white;">ใส่วันเริ่มต้นที่ต้องการค้นหา</label>
+                                <input class="form-control me-2" type="date" name="searchDateStart" id="searchDateStart"
+                                    aria-label="Search" style="width: 200px;">
+
+                                <span style="color:white;">ถึง:&nbsp;&nbsp;</span>
+
+                                <label for="searchDateStart" style="color:white;">ใส่วันสุดท้่ายที่ต้องการค้นหา</label>
+                                <input class="form-control me-2" type="date" name="searchDateStart" id="searchDateEnd"
+                                    aria-label="Search" style="width: 200px;">
+                                <button class="btn btn-outline-light w-25 h-25" type="submit">ค้นหา</button>
+                            </form>
+                        </div>
+                    </nav>
+                </div>
+
+
+                <br><br>
+                <a id="index" href="/web-management">หน้าหลักจัดการร้าน</a><br><br><br>
+
+
+                <!-- insert layout/commonBody.ejs file-->
+                <%- include('layouts/commonBody') %>
+
+</body>
+
+</html>
