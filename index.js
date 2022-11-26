@@ -1,6 +1,7 @@
 const express = require('express')
 const Customer = require('./customer')
 const Product = require('./model')
+const Order = require('./order')
 const ejs = require('ejs')
 const bodyParser = require('body-parser')
 //const { request, response } = require('express')
@@ -22,6 +23,8 @@ const { request } = require('http')
 const { response } = require('express')
 const { env } = require('process')
 const { model } = require('mongoose')
+const { time } = require('console')
+const order = require('./order')
 
 app.set('view engine', 'ejs')
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -1053,6 +1056,7 @@ app.all('/buy-products', (request, response) => {
     let grandPriceOrder = request.body.grandPriceOrder || '' //รับค่าราคาทั้งหมดที่ทำการสั่งซื้อ
     let cashMethod = request.body.cashMethod || '' // รับค่าข้อมูลช่องทางการชำระเงิน
 
+
     //สำหรับคนที่ไม่ได้เป็นสมาชิก
     if (!request.session.login) {
 
@@ -1062,18 +1066,11 @@ app.all('/buy-products', (request, response) => {
             response.render('products-InCart')
         }
         else {
+
+            request.session.cost = grandPriceOrder
             response.render('buy-products', { dataAddress: addressOrder, dataGrandPrice: grandPriceOrder, dataCashMethod: cashMethod })
+
         }
-    } else {
-
-        let form = new formidable.IncomingForm()
-        form.parse(request, (err, fields, files) => {
-
-            if (!err) {
-                let upfile = files.upfile
-                console.log(upfile.name)
-            }
-        })
     }
 })
 
@@ -1094,6 +1091,10 @@ app.all('/edit-address', (request, response) => {
 app.all('/test', (request, response) => {
 
     let addressOrder = request.session.addressOrder || [] // เก็บข้อมูลที่อยู่ของ user
+    let listItemOder = request.session.itemOrder || [] // อ่านค่าใน session ว่ามีรายการที่จะสั่งอะไรบ้าง หลังจาก เลือก check box ในรถเข็น
+    let cost = request.session.cost || '' // อ่านค่าราคารวมที่ต้องจ่าย
+
+
 
     let form = new formidable.IncomingForm({ multiples: true })
     form.parse(request, (err, fields, files) => {
@@ -1101,7 +1102,7 @@ app.all('/test', (request, response) => {
         let upfiles = files.upfiles
         if (!Array.isArray(files.upfiles)) {
             if (files.upfiles.name == '') {  //ถ้าไม่ได้เลือกไฟล์
-                response.render('buy-products', { dataAddress: addressOrder, dataGrandPrice: '77' })
+                response.render('buy-products', { dataAddress: addressOrder, dataGrandPrice: cost })
                 return
             } else {		                //ถ้าเลือกไฟล์เดียว
                 upfiles = [files.upfiles]
@@ -1112,7 +1113,7 @@ app.all('/test', (request, response) => {
         if (!err) {
             for (f of upfiles) {
                 let newfile = dir + f.name
-                let newName = f.name
+                var newName = f.name
 
                 while (fs.existsSync(newfile)) {
                     let oldName = f.name.split('.')
@@ -1137,8 +1138,31 @@ app.all('/test', (request, response) => {
                     //     console.log('file deleted!')
                 })
             }
+            // เตรียมข้อมูลเขียนลง database
+
+            let data = {
+
+                bankID: fields.bankID4Digit,
+                orderDate: fields.date,
+                orderTime: fields.time,
+                cost: cost,
+                address: addressOrder,
+                images: newName,
+                orderList: listItemOder,
+            }
+            Order
+                .create(data)
+                .then(() => {
+
+                    request.session.userID = [] //clear list order หลังจากยืนยันการสั่งเรียบร้อยแล้ว
+                    request.session.itemOrder = [] //clear list order หลังจากยืนยันการสั่งเรียบร้อยแล้ว
+                    request.session.quantity = '0' 
+
+                    response.render('buy-products', { dataAddress: addressOrder, dataGrandPrice: cost })
+                })
+                
         }
-        response.render('buy-products', { dataAddress: addressOrder, dataGrandPrice: '77' })
+
     })
     //console.log(form)
     // var transporter = nodemailer.createTransport({

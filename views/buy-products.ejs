@@ -48,37 +48,44 @@
             <hr>
             <h4>อัพโหลด หลักฐานการชำระเงิน:</h4>
 
-            <form action="/test" method="post" enctype="multipart/form-data">
-                <input type="text" name="name" value="aob">
-                <input type="file" name="upfiles" accept="image/*">
+            <form action="" method="post" enctype="multipart/form-data" class="mb-5" id="formBuyOrder">
 
-                <button>Upload</button>
+                <input type="file" name="upfiles" id="formFile" accept="image/*" class="form-control mb-4" required>
 
+                <hr>
+
+                <h4>วันที่ชำระเงิน:</h4>
+                <div class="mb-3">
+                    <input type="date" id="date" name="date" style="height: 50px;width: 200px; font-size: 16px;"
+                        required>
+
+                </div>
+                <hr>
+
+                <h4>เวลาที่ชำระเงิน:</h4>
+                <div class="mb-3">
+                    <input type="time" id="time" name="time" style="height: 50px;width: 200px; font-size: 16px;"
+                        required>
+                </div>
+                <hr>
+                <h4>กรุณาระบุเลขที่บัญชีธนาคาร 4 หลักสุดท้าย:</h4>
+                <div class="mb-3">
+                    <input type="text" name="bankID4Digit" placeholder="xxxx"
+                        style="height: 50px;width: 200px; font-size: 16px;" required>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3" onclick="confirmBuyOrder()">ยืนยันสั่งสินค้า</button>
             </form>
-
-            <div>
-                <img src="/upload/IMG_2809.JPG" alt="">
-                <img src="/upload/nougat.jpg" alt="">
-                <img src="/upload/greenrobot.png" alt="">
-            </div>
-
         </div>
-        <div class="d-flex justify-content-between">
+        <hr>
+        <div class="d-flex justify-content-between mt-5">
 
             <form action="/" method="post">
 
                 <button type="submit" class="btn btn-primary">กลับหน้าหลัก</button>
 
             </form>
-
-            <form action="" method="post" id="formOrder">
-
-                <input type="hidden" id="grandPriceOrder" name="grandPriceOrder">
-                <button type="submit" class="btn btn-primary px-3" onclick="confirmBuyOrder()">ยืนยันสั่งสินค้า</button>
-
-            </form>
         </div>
-
+        <br><br>
     </div>
 
     <script>
@@ -122,6 +129,15 @@
                 document.body.removeChild(tempText)
                 btnCopy.innerHTML = 'Copy'
             }
+        }
+
+        // form order submit
+
+        function confirmBuyOrder() {
+
+            let formBuyOrder = document.getElementById('formBuyOrder')
+
+            formBuyOrder.action = '/test'
         }
 
     </script>
