@@ -70,20 +70,69 @@
                     <div style="color:black;">หรือ</div>
                     <nav class="navbar navbar-dark bg-primary opacity-75">
                         <div class="container">
-                            <form action="/order-product" method="post" class="d-flex" role="search">
-                                <label for="searchDateStart" style="color:white;">ใส่วันเริ่มต้นที่ต้องการค้นหา</label>
-                                <input class="form-control me-2" type="date" name="searchDateStart" id="searchDateStart"
-                                    aria-label="Search" style="width: 200px;">
+                            <form action="" method="post" class="d-flex" role="search" id="formDateSearch">
 
-                                <span style="color:white;">ถึง:&nbsp;&nbsp;</span>
+                                <!--Set current date-->
+                                <% let dt=new Date(); let m=dt.getMonth() + 1; m=(m> 10) ? m : '0'+m;
+                                    let d = dt.getDate();
+                                    d = (d > 10) ? d : '0'+d;
+                                    let today = `${dt.getFullYear()}-${m}-${d}`;
+                                    %>
+                                    <label for="searchDateStart"
+                                        style="color:white;">ใส่วันเริ่มต้นที่ต้องการค้นหา</label>
+                                    <input class="form-control me-2" type="date" name="searchDateStart"
+                                        id="searchDateStart" aria-label="Search" style="width: 200px;"
+                                        value="<%= today %>" onchange="checkSearchDate()">
 
-                                <label for="searchDateStart" style="color:white;">ใส่วันสุดท้่ายที่ต้องการค้นหา</label>
-                                <input class="form-control me-2" type="date" name="searchDateStart" id="searchDateEnd"
-                                    aria-label="Search" style="width: 200px;">
-                                <button class="btn btn-outline-light w-25 h-25" type="submit">ค้นหา</button>
+                                    <span style="color:white;">ถึง:&nbsp;&nbsp;</span>
+
+                                    <label for="searchDateEnd" style="color:white;">ใส่วันสุดท้ายที่ต้องการค้นหา</label>
+                                    <input class="form-control me-2" type="date" name="searchDateEnd" id="searchDateEnd"
+                                        aria-label="Search" style="width: 200px;" value="<%= today %>"
+                                        onchange="checkSearchDate()">
+
+                                    <button class="btn btn-outline-light w-25 h-25" type="submit" id="btnSearchDate"
+                                        onclick="searchByDate()">ค้นหา</button>
                             </form>
                         </div>
                     </nav>
+                </div>
+
+                <!-- Card order list -->
+
+                <div class="main container bg-light mt-5">
+                    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4">
+                        <% for (d of data) { %>
+                            <div class="col">
+                                <div class="card h-100">
+                                    
+                                        <form action="/product-description" method="post">
+                                            <input type="hidden" name="productCode" value="<%= d.productCode %>">
+                                            <input type="image" src="upload/<%= d.images %>" class="card-img-top"
+                                                alt="Image">
+                                        </form>
+
+                                        <div class="card-body">
+                                            <h5 class="card-title">Order ID: <u>
+                                                    <%= d.orderID %>
+                                                </u></h5>
+                                                <p class="card-text my-1" style="font-size: 14px;"><b>Bank ID: <u>
+                                                    <%=d.bankID %>
+                                                </u></b></p>
+                                            <p class="card-text my-1" style="font-size: 14px;"><b>วันที่สั่งสินค้า: <u>
+                                                        <%=d.orderDate %>
+                                                    </u></b></p>
+                                            <p class="card-text my-1" style="font-size: 14px;">เวลาที่สั่ง: <%=d.orderTime
+                                                    %>
+                                            </p>
+                                            <p class="card-text" style="font-size: 14px;">ยอดรวม:
+                                                <%=d.cost %> บาท
+                                            </p>
+                                        </div>
+                                </div>
+                            </div>
+                            <% } %>
+                    </div>
                 </div>
 
 
@@ -91,6 +140,42 @@
                 <a id="index" href="/web-management">หน้าหลักจัดการร้าน</a><br><br><br>
 
 
+                <script>
+                    //check select date
+                    function checkSearchDate() {
+
+                        let selectStartDate = document.getElementById('searchDateStart')
+                        let selectEndDate = document.getElementById('searchDateEnd')
+                        let btnSearchDate = document.getElementById('btnSearchDate')
+
+                        let dt = new Date()
+                        let m = dt.getMonth() + 1
+                        m = (m > 10) ? m : '0' + m
+                        let d = dt.getDate()
+                        d = (d > 10) ? d : '0' + d
+                        let today = `${dt.getFullYear()}-${m}-${d}`
+
+                        if (selectStartDate.value > selectEndDate.value) {
+
+                            selectStartDate.value = selectEndDate.value
+
+                        } else if (selectEndDate.value.toString() > today) {
+
+                            selectEndDate.value = today
+                        }
+
+                    }
+
+                    //Search by date
+
+                    function searchByDate() {
+
+                        let formDateSearch = document.getElementById('formDateSearch')
+
+                        formDateSearch.action = '/order-product'
+                    }
+
+                </script>
                 <!-- insert layout/commonBody.ejs file-->
                 <%- include('layouts/commonBody') %>
 

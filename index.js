@@ -26,9 +26,10 @@ const formidable = require('formidable')
 const { request } = require('http')
 const { response } = require('express')
 const { env } = require('process')
-const { model } = require('mongoose')
+const { model, Promise } = require('mongoose')
 const { time } = require('console')
 const order = require('./order')
+const { resolve } = require('path')
 
 app.set('view engine', 'ejs')
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -728,6 +729,9 @@ app.all('/order-product', (request, response) => {
     let searchOrderID = request.body.searchOrderID || '' //รับค่า keyword OrderID เพื่อทำการค้นหา
     let searchName = request.body.searchName || '' //รับค่า keyword Name เพื่อทำการค้นหา
 
+    let searchDateStart = request.body.searchDateStart || '' //รับค่า keyword searchDateStart เพื่อทำการค้นหา
+    let searchDateEnd = request.body.searchDateEnd || '' //รับค่า keyword searchDateEnd เพื่อทำการค้นหา
+
     let userName = request.session.userName || ''
 
     if (request.session.userName) {
@@ -737,7 +741,7 @@ app.all('/order-product', (request, response) => {
         if (request.method == 'GET') {
 
 
-            response.render('order-product', { user: userName })
+            response.render('order-product', { user: userName, data: '' })
             return
         }
         if (searchBankID != '') {
@@ -745,32 +749,35 @@ app.all('/order-product', (request, response) => {
                 .find({ bankID: new RegExp(searchBankID, 'i') })
                 .exec((err, docs) => {
 
-                    console.log(docs)
-                    response.render('order-product', { user: userName })
+                    response.render('order-product', { user: userName, data: docs })
                 })
         } else if (searchOrderID != '') {
             Order
                 .find({ orderID: new RegExp(searchOrderID, 'i') })
                 .exec((err, docs) => {
 
-                    console.log(docs)
-                    response.render('order-product', { user: userName })
+                    response.render('order-product', { user: userName, data: docs })
                 })
         } else if (searchName != '') {
             Order
                 .find({ address: new RegExp(searchName, 'i') })
                 .exec((err, docs) => {
 
-                    console.log(docs)
-                    response.render('order-product', { user: userName })
+                    response.render('order-product', { user: userName, data: docs })
+                })
+        } else if (searchDateEnd != '') {
+            Order
+                .find({ orderDate: { $gte: searchDateStart, $lte: searchDateEnd } })
+                .exec((err, docs) => {
+
+                    response.render('order-product', { user: userName, data: docs })
                 })
         } else { // หาทั้งหมด
             Order
                 .find()
                 .exec((err, docs) => {
 
-                    console.log(docs)
-                    response.render('order-product', { user: userName })
+                    response.render('order-product', { user: userName, data: docs })
                 })
         }
 
@@ -1210,66 +1217,77 @@ app.all('/order', (request, response) => {
 
         if (!err) {
             if (listItemOder != '') {
-                for (f of upfiles) {
-                    let newfile = dir + f.name
-                    var newName = f.name
 
-                    while (fs.existsSync(newfile)) {
-                        let oldName = f.name.split('.')
-                        let r = Math.floor(Math.random() * 999999)
-                        oldName[0] += '_' + r
-                        newName = oldName.join('.')
-                        newfile = dir + newName
-                    }
-
-                    sharp(f.path)
-                        .resize({ width: 512, withoutEnlargement: false })
-                        .toFile(newfile, err => {
-                        })
-
-                    // fs.readFile(f.path, function (err, data) {
-                    //     if (err) { throw err }
-                    //     //     console.log('file read!')
-
-                    //     fs.writeFile(newfile, data, function (err) {
-                    //         if (err) { throw err }
-                    //         //     console.log('file written!')
-                    //     })
-
-                    //     // fs.unlink(upfile.path,function (err) {
-                    //     //     if (err) {throw err}
-                    //     //     console.log('file deleted!')
-                    // })
-                }
                 // เตรียมข้อมูลเขียนลง database
                 let bankID = fields.bankID4Digit
-                let orderID = bankID + '-' + Math.floor(Math.random() * 999999)
+                let orderDatabaseID = ''
+                let orderID = ''
+                let orderIDCheck = 0
 
-                let listOrder = listItemOder.join(',')
-                let address = addressOrder.join(',')
+                //ตรวจสอบว่ามี orderID ซ้ำกันหรือไม่ ถ้าซ้ำให้สุ่มเลข ID ใหม่
 
-                let data = {
-                    orderID: orderID,
-                    bankID: bankID,
-                    orderDate: fields.date,
-                    orderTime: fields.time,
-                    cost: cost,
-                    address: address,
-                    images: newName,
-                    orderList: listOrder,
-                }
-
+                orderID = bankID + '-' + Math.floor(Math.random() * 999999)
 
                 Order
-                    .create(data)
-                    .then(() => {
+                    .find()
+                    .exec((err, docs) => {
+                        do {
+                            orderIDCheck = 0
+                            for (d of docs) {
+                                orderDatabaseID = d.orderID
+                                if (orderID == orderDatabaseID) {
+                                    orderID = bankID + '-' + Math.floor(Math.random() * 999999)
+                                    orderIDCheck = 1
+                                }
+                            }
+                        } while (orderIDCheck == 1)
 
-                        request.session.userID = [] //clear list order หลังจากยืนยันการสั่งเรียบร้อยแล้ว
-                        request.session.itemOrder = [] //clear list order หลังจากยืนยันการสั่งเรียบร้อยแล้ว
-                        request.session.quantity = '0'
+                        //upload picture to server
+                        for (f of upfiles) {
+                            let newfile = dir + f.name
+                            var newName = f.name
 
-                        response.render('order-complete', { orderID: orderID })
+                            while (fs.existsSync(newfile)) {
+                                let oldName = f.name.split('.')
+                                let r = Math.floor(Math.random() * 999999)
+                                oldName[0] += '_' + r
+                                newName = oldName.join('.')
+                                newfile = dir + newName
+                            }
+
+                            sharp(f.path)
+                                .resize({ width: 512, withoutEnlargement: false })
+                                .toFile(newfile, err => {
+                                })
+                        }
+
+                        let listOrder = listItemOder.join(',')
+                        let address = addressOrder.join(',')
+
+                        let data = {
+                            orderID: orderID,
+                            bankID: bankID,
+                            orderDate: fields.date,
+                            orderTime: fields.time,
+                            cost: cost,
+                            address: address,
+                            images: newName,
+                            orderList: listOrder,
+                        }
+
+                        Order
+                            .create(data)
+                            .then(() => {
+
+                                request.session.userID = [] //clear list order หลังจากยืนยันการสั่งเรียบร้อยแล้ว
+                                request.session.itemOrder = [] //clear list order หลังจากยืนยันการสั่งเรียบร้อยแล้ว
+                                request.session.quantity = '0'
+
+                                response.render('order-complete', { orderID: orderID })
+                            })
+
                     })
+
             } else {
                 response.redirect('/')
             }
