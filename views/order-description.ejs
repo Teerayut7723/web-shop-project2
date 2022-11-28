@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>
+        AP Shopping market - รายละเอียดการสั่งสินค้า
+    </title>
+
+    <!-- insert layout/head.ejs file-->
+    <%- include('layouts/head') %>
+
+
+</head>
+
+<body onload="priceDefault()">
+
+
+    <!-- insert layout/nav.ejs file-->
+    <%- include('layouts/nav') %>
+
+        <!--Product image preview-->
+
+        <div class="container bg-light mt-5">
+
+            <div class="display-6 bg-light m-5"><u>รายละเอียดการสั่งสินค้า</u></div>
+
+            <div class="d-flex flex-md-row flex-column">
+                <div id="carouselExampleControlsNoTouching" class="carousel slide w-75 p-2" data-bs-touch="true"
+                    data-bs-interval="false">
+                    <div class="carousel-inner border border-dark">
+
+                        <% for (d of data) { %>
+                            <!--image name-->
+
+                            <div class="carousel-item" id="carousel0">
+                                <img src="/upload/<%= d.images %>" class="d-block w-100" alt="Image">
+                            </div>
+
+
+                            <% } %>
+                    </div>
+                    <button class="carousel-control-prev" type="button"
+                        data-bs-target="#carouselExampleControlsNoTouching" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button"
+                        data-bs-target="#carouselExampleControlsNoTouching" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+                <!--Detail product-->
+                <div class="p-2 w-75">
+
+                    <% for (d of data) { %>
+
+                        <div class="display-7">Order ID: <u>
+                                <%= d.orderID %>
+                            </u></div>
+                        <br>
+                        <span class="display-7">Bank ID:
+                            <u>
+                                <%= d.bankID %>
+                            </u>
+                        </span>
+                        <br>
+                        <p class="display-7 pt-3">วันที่สั่งสินค้า:
+                            <%= d.orderDate %>&nbsp;&nbsp; เวลาที่สั่งสินค้า<%= d.orderTime %>
+                        </p>
+                        <br>
+                        <p class="display-7">ยอดรวม:
+                            <%= d.cost %>&nbsp;บาท
+                        </p>
+
+
+
+                </div>
+            </div>
+
+            <!--ที่อยู่ที่จดส่งของลูกค้า-->
+            <div>
+                <% let dataAddress = d.address.split(','); %>
+                
+                <h4>ที่อยู่ในการจัดส่ง:</h4>
+                <div>
+                    <%= dataAddress[0] %>
+                        <%= dataAddress[1] %>
+                </div>
+                <div>ที่อยู่ <%= dataAddress[3] %> อำเภอ <%= dataAddress[4] %> จังหวัด <%= dataAddress[5] %>
+                                <%= dataAddress[6] %>
+                </div>
+                <div>เบอร์โทรศัพท์: <%= dataAddress[2] %>
+                </div>
+
+
+
+                <% } %>
+            </div>
+
+            <br><br>
+            <form action="/" method="post">
+
+                <button type="submit" class="btn btn-primary">กลับหน้าหลัก</button>
+
+            </form>
+            <br><br>
+
+        </div>
+
+
+
+
+        <!--Function increase and decrease buy product-->
+        <script>
+
+
+
+        </script>
+
+        <!-- insert layout/commonBody.ejs file-->
+        <%- include('layouts/commonBody') %>
+
+</body>
+
+</html>
