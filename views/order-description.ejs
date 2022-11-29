@@ -15,96 +15,131 @@
 
 </head>
 
-<body onload="priceDefault()">
+<body>
 
+    <!--Product image preview-->
 
-    <!-- insert layout/nav.ejs file-->
-    <%- include('layouts/nav') %>
+    <div class="container bg-light mt-5">
 
-        <!--Product image preview-->
+        <div class="display-6 bg-light m-5"><u>รายละเอียดการสั่งสินค้า</u></div>
 
-        <div class="container bg-light mt-5">
+        <div class="d-flex flex-md-row flex-column">
 
-            <div class="display-6 bg-light m-5"><u>รายละเอียดการสั่งสินค้า</u></div>
+            <% for (d of data) { %>
+                <!--image name-->
 
-            <div class="d-flex flex-md-row flex-column">
-                <div id="carouselExampleControlsNoTouching" class="carousel slide w-75 p-2" data-bs-touch="true"
-                    data-bs-interval="false">
-                    <div class="carousel-inner border border-dark">
-
-                        <% for (d of data) { %>
-                            <!--image name-->
-
-                            <div class="carousel-item" id="carousel0">
-                                <img src="/upload/<%= d.images %>" class="d-block w-100" alt="Image">
-                            </div>
-
-
-                            <% } %>
-                    </div>
-                    <button class="carousel-control-prev" type="button"
-                        data-bs-target="#carouselExampleControlsNoTouching" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Previous</span>
-                    </button>
-                    <button class="carousel-control-next" type="button"
-                        data-bs-target="#carouselExampleControlsNoTouching" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Next</span>
-                    </button>
-                </div>
-                <!--Detail product-->
-                <div class="p-2 w-75">
-
-                    <% for (d of data) { %>
-
-                        <div class="display-7">Order ID: <u>
-                                <%= d.orderID %>
-                            </u></div>
-                        <br>
-                        <span class="display-7">Bank ID:
-                            <u>
-                                <%= d.bankID %>
-                            </u>
-                        </span>
-                        <br>
-                        <p class="display-7 pt-3">วันที่สั่งสินค้า:
-                            <%= d.orderDate %>&nbsp;&nbsp; เวลาที่สั่งสินค้า<%= d.orderTime %>
-                        </p>
-                        <br>
-                        <p class="display-7">ยอดรวม:
-                            <%= d.cost %>&nbsp;บาท
-                        </p>
-
-
-
-                </div>
-            </div>
-
-            <!--ที่อยู่ที่จดส่งของลูกค้า-->
-            <div>
-                <% let dataAddress = d.address.split(','); %>
-                
-                <h4>ที่อยู่ในการจัดส่ง:</h4>
                 <div>
-                    <%= dataAddress[0] %>
-                        <%= dataAddress[1] %>
-                </div>
-                <div>ที่อยู่ <%= dataAddress[3] %> อำเภอ <%= dataAddress[4] %> จังหวัด <%= dataAddress[5] %>
-                                <%= dataAddress[6] %>
-                </div>
-                <div>เบอร์โทรศัพท์: <%= dataAddress[2] %>
+                    <img src="/upload/<%= d.images %>" class="d-block w-100" alt="Image">
                 </div>
 
 
 
-                <% } %>
-            </div>
+                <!--Detail product-->
+                <div class="p-3 w-75">
+
+
+                    <div class="display-7">Order ID: <u>
+                            <%= d.orderID %>
+                        </u></div>
+                    <br>
+                    <span class="display-7">Bank ID:
+                        <u>
+                            <%= d.bankID %>
+                        </u>
+                    </span>
+                    <br>
+                    <p class="display-7 pt-3">วันที่สั่งสินค้า:
+                        <%= d.orderDate %>&nbsp;&nbsp; เวลาที่สั่งสินค้า<%= d.orderTime %>
+                    </p>
+                    <br>
+                    <p class="display-7">ยอดรวม:
+                        <%= d.cost %>&nbsp;บาท
+                    </p>
+
+                    <!--ที่อยู่ที่จดส่งของลูกค้า-->
+
+                    <% let dataAddress=d.address.split(','); %>
+
+                        <h4>ที่อยู่ในการจัดส่ง:</h4>
+                        <div>ชื่อ:&nbsp;
+                            <%= dataAddress[0] %>
+                                <%= dataAddress[1] %>
+                        </div>
+                        <div>ที่อยู่ <%= dataAddress[3] %> อำเภอ <%= dataAddress[4] %> จังหวัด <%= dataAddress[5] %>
+                                        <%= dataAddress[6] %>
+                        </div>
+                        <div>เบอร์โทรศัพท์: <%= dataAddress[2] %>
+                        </div>
+
+
+
+                        <% } %>
+                </div>
+        </div>
+
+        <!--Show list order-->
+        <div class="table-responsive-sm mt-5">
+            <h4>รายการสั่งสินค้า:</h4>
+            <table class="table" style="width: 100%">
+                <thead class="table-primary">
+                    <tr>
+                        <th scope="col" style="width: 70px;">ลำดับที่</th>
+                        <th scope="col" style="width: 70px;">รหัสสินค้า</th>
+                        <th scope="col"> สินค้า</th>
+                        <th scope="col" style="width: 77px">ราคาต่อชิ้น</th>
+                        <th scope="col" style="width: 200px;">จำนวน</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    <% let itemNumber = 1; %>
+                    <% for ( i in list ) { %>
+                        
+                        <tr>
+                            <td scope="row">
+                                <%= itemNumber %>
+                            </td>
+                            <td>
+                                <%= list[i][0] %>
+                            </td>
+                            <td>
+                                <div>
+                                    <img src="product-images/<%= list[i][5] %>" alt="Images"
+                                        style="height: 77px; width: 77px; margin-left: 5px; text-align: center; margin-right: 25px;">
+                                    <%= list[i][1] %>
+                                        <%= list[i][2] %>
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    <%= list[i][3] %>
+                                </div> บาท
+                            </td>
+                            <td>
+                                <%= list[i][4] %>
+                            </td>
+                           <% itemNumber = itemNumber + 1 %>
+                            <% } %>
+
+                </tbody>
+                <% for (d of data) { %>
+                    <tfoot class="table-primary">
+                        <tr>
+                            <td scope="row"></td>
+                            <td></td>
+                            <td colspan="1">ราคารวมทั้งหมด + ค่าจัดส่ง</td>
+                            <td colspan="2" id="grandTotal"><%= d.cost %> บาท</td>
+
+                        </tr>
+                    </tfoot>
+                    <% } %>
+            </table>
+
 
             <br><br>
-            <form action="/" method="post">
+            <form action="/order-product" method="post">
 
-                <button type="submit" class="btn btn-primary">กลับหน้าหลัก</button>
+                <button type="submit" class="btn btn-primary w-25">กลับ</button>
 
             </form>
             <br><br>

@@ -732,7 +732,7 @@ app.all('/order-product', (request, response) => {
     let searchDateStart = request.body.searchDateStart || '' //รับค่า keyword searchDateStart เพื่อทำการค้นหา
     let searchDateEnd = request.body.searchDateEnd || '' //รับค่า keyword searchDateEnd เพื่อทำการค้นหา
 
-    let userName = request.session.userName || ''
+    let userName = request.session.userName || '' // admin log-in
 
     if (request.session.userName) {
         // response.render('add-product', { user: userName }) //ถ้า login แล้ว
@@ -787,6 +787,30 @@ app.all('/order-product', (request, response) => {
 
 })
 
+// รายละเอียดของการสั่งสินค้าและที่อยู่การจดส่งของลูกค้า
+
+app.all('/order-description', (request, response) => {
+
+
+    let orderID = request.body.orderID || '' // Recieve data order ID
+
+    if (request.session.userName) {
+
+        Order
+            .find()
+            .where('orderID').equals(orderID)
+            .exec((err, docs) => {
+                if (!err) {
+                    var list
+                    for (d of docs) {
+                        list = d.orderList
+                    }
+
+                    response.render('order-description', { data: docs, list: list })
+                }
+            })
+    }
+})
 
 // รายละเอียดย่อยของแต่ละสินค้า พร้อมการเลือกจำนวน และสั่งซื้อ
 
@@ -1261,7 +1285,7 @@ app.all('/order', (request, response) => {
                                 })
                         }
 
-                        let listOrder = listItemOder.join(',')
+                        //let listOrder = listItemOder.join(',')
                         let address = addressOrder.join(',')
 
                         let data = {
@@ -1272,7 +1296,7 @@ app.all('/order', (request, response) => {
                             cost: cost,
                             address: address,
                             images: newName,
-                            orderList: listOrder,
+                            orderList: listItemOder,
                         }
 
                         Order

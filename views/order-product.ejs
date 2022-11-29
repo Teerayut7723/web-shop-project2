@@ -110,7 +110,7 @@
                                     <% let customerName = d.address.split(','); %>
 
                                         <form action="/order-description" method="post">
-                                            <input type="hidden" name="productCode" value="<%= d.productCode %>">
+                                            <input type="hidden" name="orderID" value="<%= d.orderID %>">
                                             <input type="image" src="upload/<%= d.images %>" class="card-img-top"
                                                 alt="Image">
                                         </form>

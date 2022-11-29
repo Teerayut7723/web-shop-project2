@@ -14,7 +14,7 @@ const orderSchema = new mongoose.Schema({
     cost: {type: String, required: true},
     address: {type: String, required: true},  
     images: {type: String, required: true},
-    orderList: {type: String, required:true},
+    orderList: {type: Array, required:true},
 })
 
 
