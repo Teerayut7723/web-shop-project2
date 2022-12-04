@@ -141,7 +141,7 @@
 
             </form>
         </div>
-
+        <br><br><br>
     </div>
 
     <script>
@@ -232,7 +232,7 @@
                 tempText.value = bankNumber.value
                 document.body.appendChild(tempText) //Addition temporary element
 
-                tempText.select() 
+                tempText.select()
                 //bankNumber.setSelectionRange(0, 99999); // For mobile devices
 
                 //navigator.clipboard.writeText(bankNumber.value)
@@ -242,7 +242,7 @@
                 document.body.removeChild(tempText) //Delete temporary element
 
                 btnCopy.innerHTML = 'Copied'
-                
+
             } else {
 
                 tempText.value = bankNumber.value

@@ -15,6 +15,8 @@ const orderSchema = new mongoose.Schema({
     address: {type: String, required: true},  
     images: {type: String, required: true},
     orderList: {type: Array, required:true},
+    statusOrder: {type: String, require: true},
+    postID: {type: String},
 })
 
 

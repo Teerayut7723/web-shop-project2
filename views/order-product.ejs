@@ -14,7 +14,7 @@
 
 </head>
 
-<body>
+<body onload="dataCheck()">
 
     <div class="display-4 bg-success">Hello <%=user %>
     </div>
@@ -30,12 +30,16 @@
             <% } %>
 
                 <div>
+
                     <nav class="navbar navbar-dark bg-primary">
                         <div class="container">
-                            <form action="/order-product" method="post" class="d-flex" role="search">
 
-                                <input class="form-control me-2" type="search" name="searchBankID"
-                                    placeholder="ใส่รหัสธนาคาร 4 ตัวท้าย" aria-label="Search" style="width: 200px;">
+                            <form action="/order-product" method="post" class="d-flex" role="search"
+                                id="formSearchBankID">
+
+                                <input class="form-control me-2" type="search" name="searchBankID" id="searchBankID"
+                                    placeholder="ใส่รหัสธนาคาร 4 ตัวท้าย" aria-label="Search" style="width: 200px;"
+                                    value="<%= searchBankID %>">
 
                                 <button class="btn btn-outline-light w-50 h-25" type="submit">ค้นหา</button>
                             </form>
@@ -46,8 +50,9 @@
                         <div class="container">
                             <form action="/order-product" method="post" class="d-flex" role="search">
 
-                                <input class="form-control me-2" type="search" name="searchOrderID"
-                                    placeholder="ใส่เลขที่การสั่งสินค้า" aria-label="Search" style="width: 200px;">
+                                <input class="form-control me-2" type="search" name="searchOrderID" id="searchOrderID"
+                                    placeholder="ใส่เลขที่การสั่งสินค้า" aria-label="Search" style="width: 200px;"
+                                    value="<%= searchOrderID %>">
 
                                 <button class="btn btn-outline-light w-50 h-25" type="submit">ค้นหา</button>
                             </form>
@@ -59,8 +64,9 @@
                         <div class="container">
                             <form action="/order-product" method="post" class="d-flex" role="search">
 
-                                <input class="form-control me-2" type="search" name="searchName"
-                                    placeholder="ใส่ชื่อลูกค้า" aria-label="Search" style="width: 200px;">
+                                <input class="form-control me-2" type="search" name="searchName" id="searchName"
+                                    placeholder="ใส่ชื่อลูกค้า" aria-label="Search" style="width: 200px;"
+                                    value="<%= searchName %>">
 
                                 <button class="btn btn-outline-light w-50 h-25" type="submit">ค้นหา</button>
                             </form>
@@ -72,23 +78,22 @@
                         <div class="container">
                             <form action="" method="post" class="d-flex" role="search" id="formDateSearch">
 
-                                <!--Set current date-->
-                                <% let dt=new Date(); let m=dt.getMonth() + 1; m=(m> 10) ? m : '0'+m;
-                                    let d = dt.getDate();
-                                    d = (d > 10) ? d : '0'+d;
-                                    let today = `${dt.getFullYear()}-${m}-${d}`;
-                                    %>
+                                <!--check มาหน้านี้ครั้งแรก ให้ไม่ต้องอ่านวันที่-->
+                                <% if (locals.dateCheck) { %>
+                                    <input type="hidden" id="dateCheck" value="<%= dateCheck %>">
+                              <%  } %>
+                                    
                                     <label for="searchDateStart"
                                         style="color:white;">ใส่วันเริ่มต้นที่ต้องการค้นหา</label>
                                     <input class="form-control me-2" type="date" name="searchDateStart"
                                         id="searchDateStart" aria-label="Search" style="width: 200px;"
-                                        value="<%= today %>" onchange="checkSearchDate()">
+                                        value="<%= searchDateStart %>" onchange="checkSearchDate()">
 
                                     <span style="color:white;">ถึง:&nbsp;&nbsp;</span>
 
                                     <label for="searchDateEnd" style="color:white;">ใส่วันสุดท้ายที่ต้องการค้นหา</label>
                                     <input class="form-control me-2" type="date" name="searchDateEnd" id="searchDateEnd"
-                                        aria-label="Search" style="width: 200px;" value="<%= today %>"
+                                        aria-label="Search" style="width: 200px;" value="<%= searchDateEnd %>"
                                         onchange="checkSearchDate()">
 
                                     <button class="btn btn-outline-light w-25 h-25" type="submit" id="btnSearchDate"
@@ -96,6 +101,23 @@
                             </form>
                         </div>
                     </nav>
+                    <form action="" method="post" id="formSelectStatus">
+                        <input type="text" id="searchKeyWordIndex" name="searchKeyWordIndex">
+                        <input type="text" id="searchKeyWord1" name="searchKeyWord1">
+                        <input type="text" id="searchKeyWord2" name="searchKeyWord2">
+                        <input type="hidden" id="statusSelectIndex" value="<%= selectIndex %>">
+                        <div class="mt-3 container" style="text-align:end ;">สถานะการจัดส่งสินค้า: <br>
+                            <select name="statusOrder" id="statusOrder" style="height: 50px; width: 200px;"
+                                onchange="selectStatusView()">
+                                <option value="all">ทั้งหมด</option>
+                                <option value="ต้องจัดส่ง">ต้องจัดส่ง</option>
+                                <option value="เตรียมจัดส่งสินค้า">เตรียมจัดส่งสินค้า</option>
+                                <option value="กำลังนำส่งสินค้า">กำลังนำส่งสินค้า</option>
+                                <option value="ได้รับสินค้าแล้ว">ได้รับสินค้าแล้ว</option>
+                                <option value="เรียบร้อยแล้ว(จบ)">เรียบร้อยแล้ว(จบ)</option>
+                            </select>
+                        </div>
+                    </form>
                 </div>
 
                 <!-- Card order list -->
@@ -107,10 +129,13 @@
                             <div class="col">
                                 <div class="card h-100">
 
-                                    <% let customerName = d.address.split(','); %>
+                                    <% let customerName=d.address.split(','); %>
 
                                         <form action="/order-description" method="post">
                                             <input type="hidden" name="orderID" value="<%= d.orderID %>">
+                                            <input type="text" id="searchKeyWordIndex" name="searchKeyWordIndex">
+                                            <input type="text" id="searchKeyWord1" name="searchKeyWord1">
+                                            <input type="text" id="searchKeyWord2" name="searchKeyWord2">
                                             <input type="image" src="upload/<%= d.images %>" class="card-img-top"
                                                 alt="Image">
                                         </form>
@@ -119,20 +144,23 @@
                                             <h5 class="card-title">Order ID: <u>
                                                     <%= d.orderID %>
                                                 </u></h5>
-                                                <p class="card-text my-1" style="font-size: 14px;"><b>Bank ID: <u>
-                                                    <%=d.bankID %>
-                                                </u></b></p>
+                                            <p class="card-text my-1" style="font-size: 14px;"><b>Bank ID: <u>
+                                                        <%=d.bankID %>
+                                                    </u></b></p>
                                             <p class="card-text my-1" style="font-size: 14px;"><b>วันที่สั่งสินค้า: <u>
                                                         <%=d.orderDate %>
                                                     </u></b></p>
-                                            <p class="card-text my-1" style="font-size: 14px;">เวลาที่สั่ง: <%=d.orderTime
-                                                    %>
+                                            <p class="card-text my-1" style="font-size: 14px;">เวลาที่สั่ง:
+                                                <%=d.orderTime %>
                                             </p>
-                                            <p class="card-text" style="font-size: 14px;">ยอดรวม: 
+                                            <p class="card-text" style="font-size: 14px;">ยอดรวม:
                                                 <%= d.cost %> บาท
                                             </p>
                                             <p class="card-text" style="font-size: 14px;">ชื่อ:
                                                 <%= customerName[0] %>&nbsp;<%= customerName[1] %>
+                                            </p>
+                                            <p class="card-text" style="font-size: 14px;">สถานะ:
+                                                <%= d.statusOrder %>
                                             </p>
                                         </div>
                                 </div>
@@ -188,6 +216,93 @@
                         let showCost = document.getElementById('showCost')
 
                         showCost.innerHTML = 'ยอดรวม: ' + cost.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + 'บาท'
+                    }
+
+                    // sort status view
+
+                    function selectStatusView() {
+
+                        let formSelectStatus = document.getElementById('formSelectStatus')
+
+                        formSelectStatus.action = '/order-product'
+                        formSelectStatus.submit()
+
+                    }
+
+                    // check select status index view
+
+                    function dataCheck() {
+
+                        let statusSelectIndex = document.getElementById('statusSelectIndex')
+                        let statusOrder = document.getElementById('statusOrder')
+
+                        let searchKeyWord1 = document.getElementById('searchKeyWord1')
+                        let searchKeyWord2 = document.getElementById('searchKeyWord2')
+                        let searchKeyWordIndex = document.getElementById('searchKeyWordIndex')
+
+
+                        // let searchKeyWordDummy1 = document.getElementById('searchKeyWordDummy1')
+                        // let searchKeyWordDummy2 = document.getElementById('searchKeyWordDummy2')
+                        // let searchKeyWordIndexDummy = document.getElementById('searchKeyWordIndexDummy')
+
+                        if (statusSelectIndex.value == 'all' || statusSelectIndex.value == '') {
+
+                            statusOrder.selectedIndex = '0'
+                        } else if (statusSelectIndex.value == 'ต้องจัดส่ง') {
+
+                            statusOrder.selectedIndex = '1'
+                        } else if (statusSelectIndex.value == 'เตรียมจัดส่งสินค้า') {
+
+                            statusOrder.selectedIndex = '2'
+                        } else if (statusSelectIndex.value == 'กำลังนำส่งสินค้า') {
+
+                            statusOrder.selectedIndex = '3'
+                        } else if (statusSelectIndex.value == 'ได้รับสินค้าแล้ว') {
+
+                            statusOrder.selectedIndex = '4'
+                        } else if (statusSelectIndex.value == 'เรียบร้อยแล้ว(จบ)') {
+
+                            statusOrder.selectedIndex = '5'
+                        }
+
+                        //Record search keyword
+
+                        let searchBankID = document.getElementById('searchBankID')
+                        let searchOrderID = document.getElementById('searchOrderID')
+                        let searchName = document.getElementById('searchName')
+
+                        let searchDateStart = document.getElementById('searchDateStart')
+                        let searchDateEnd = document.getElementById('searchDateEnd')
+
+                        let dateCheck = document.getElementById('dateCheck')
+
+                        if (searchBankID.value != '') {
+
+                            searchKeyWord1.value = searchBankID.value
+                            searchKeyWord2.value = searchBankID.value
+                            searchKeyWordIndex.value = 'a' //a แทนการ search แบบ bank ID
+
+                        } else if (searchOrderID.value != '') {
+
+                            searchKeyWord1.value = searchOrderID.value
+                            searchKeyWord2.value = searchOrderID.value
+                            searchKeyWordIndex.value = 'b' //b แทนการ search แบบ order ID
+                        } else if (searchName.value != '') {
+
+                            searchKeyWord1.value = searchName.value
+                            searchKeyWord2.value = searchName.value
+                            searchKeyWordIndex.value = 'c' //c แทนการ search แบบ customer name
+                        } else if (dateCheck.value == 'true') {
+                            searchKeyWord1.value = ''
+                            searchKeyWord2.value = ''
+                            
+                        } else if (dateCheck.value == 'false'){
+                            searchKeyWord1.value = searchDateStart.value
+                            searchKeyWord2.value = searchDateEnd.value
+                            searchKeyWordIndex.value = 'd' //d แทนการ search แบบ date
+                            
+                        }
+
                     }
 
                 </script>

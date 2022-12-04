@@ -15,7 +15,7 @@
 
 </head>
 
-<body>
+<body onload="dataCheck()">
 
     <!--Product image preview-->
 
@@ -29,7 +29,7 @@
                 <!--image name-->
 
                 <div>
-                    <img src="/upload/<%= d.images %>" class="d-block w-100" alt="Image">
+                    <img src="/upload/<%= d.images %>" class="d-block w-100 border border-dark" alt="Image">
                 </div>
 
 
@@ -37,10 +37,14 @@
                 <!--Detail product-->
                 <div class="p-3 w-75">
 
-
+                    <div class="display-6 mb-1" style="color:green ;">สถานะ:
+                        <%= d.statusOrder %>
+                    </div>
                     <div class="display-7">Order ID: <u>
                             <%= d.orderID %>
-                        </u></div>
+                        </u>
+                        <input type="hidden" value="<%= d.orderID %>" id="productOrderID">
+                    </div>
                     <br>
                     <span class="display-7">Bank ID:
                         <u>
@@ -55,7 +59,7 @@
                     <p class="display-7">ยอดรวม:
                         <%= d.cost %>&nbsp;บาท
                     </p>
-
+                    <hr>
                     <!--ที่อยู่ที่จดส่งของลูกค้า-->
 
                     <% let dataAddress=d.address.split(','); %>
@@ -70,10 +74,40 @@
                         </div>
                         <div>เบอร์โทรศัพท์: <%= dataAddress[2] %>
                         </div>
+                        <hr>
+                        <div class="mt-3" style="font-size: 20px; color:blue;">
+                            หมายเลขพัสดุ: <%= d.postID %>
+                        </div>
+                        <input type="hidden" id="postNumber" value="<%= d.postID %>">
 
 
 
                         <% } %>
+
+                            <!-- Update status -->
+                            <form action="" id="formStatus" method="post">
+                                <div>
+                                    <input type="hidden" id="orderID" name="orderID">
+                                    ใส่หมายเลขพัสดุ: <br>
+                                    <input type="text" value="" id="postID" name="postID" style="width: 300px;">
+                                </div>
+                                <div class="mt-3">เปลี่ยนสถานะการจัดส่งสินค้า: <br>
+                                    <select name="statusOrder" id="statusOrder" style="height: 50px; width: 200px;">
+                                        <option value="ต้องจัดส่ง" selected>ต้องจัดส่ง</option>
+                                        <option value="เตรียมจัดส่งสินค้า">เตรียมจัดส่งสินค้า</option>
+                                        <option value="กำลังนำส่งสินค้า">กำลังนำส่งสินค้า</option>
+                                        <option value="ได้รับสินค้าแล้ว">ได้รับสินค้าแล้ว</option>
+                                        <option value="เรียบร้อยแล้ว(จบ)">เรียบร้อยแล้ว(จบ)</option>
+                                    </select>
+                                </div>
+                                <div class="d-flex flex-row justify-content-between mt-5">
+                                    <input type="hidden" id="orderID">
+                                    <button type="submit" class="btn btn-primary" id="updateStatus"
+                                        onclick="orderUpdate()">อัพเดตสถานะ</button>
+                                    <button type="submit" class="btn btn-primary" id="deleteItem"
+                                        onclick="deleteOrder()">ลบรายการนี้</button>
+                                </div>
+                            </form>
                 </div>
         </div>
 
@@ -92,34 +126,34 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <% let itemNumber = 1; %>
-                    <% for ( i in list ) { %>
-                        
-                        <tr>
-                            <td scope="row">
-                                <%= itemNumber %>
-                            </td>
-                            <td>
-                                <%= list[i][0] %>
-                            </td>
-                            <td>
-                                <div>
-                                    <img src="product-images/<%= list[i][5] %>" alt="Images"
-                                        style="height: 77px; width: 77px; margin-left: 5px; text-align: center; margin-right: 25px;">
-                                    <%= list[i][1] %>
-                                        <%= list[i][2] %>
-                                </div>
-                            </td>
-                            <td>
-                                <div>
-                                    <%= list[i][3] %>
-                                </div> บาท
-                            </td>
-                            <td>
-                                <%= list[i][4] %>
-                            </td>
-                           <% itemNumber = itemNumber + 1 %>
-                            <% } %>
+                    <% let itemNumber=1; %>
+                        <% for ( i in list ) { %>
+
+                            <tr>
+                                <td scope="row">
+                                    <%= itemNumber %>
+                                </td>
+                                <td>
+                                    <%= list[i][0] %>
+                                </td>
+                                <td>
+                                    <div>
+                                        <img src="product-images/<%= list[i][5] %>" alt="Images"
+                                            style="height: 77px; width: 77px; margin-left: 5px; text-align: center; margin-right: 25px;">
+                                        <%= list[i][1] %>
+                                            <%= list[i][2] %>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <%= list[i][3] %>
+                                    </div> บาท
+                                </td>
+                                <td>
+                                    <%= list[i][4] %>
+                                </td>
+                                <% itemNumber=itemNumber + 1 %>
+                                    <% } %>
 
                 </tbody>
                 <% for (d of data) { %>
@@ -128,7 +162,9 @@
                             <td scope="row"></td>
                             <td></td>
                             <td colspan="1">ราคารวมทั้งหมด + ค่าจัดส่ง</td>
-                            <td colspan="2" id="grandTotal"><%= d.cost %> บาท</td>
+                            <td colspan="2" id="grandTotal">
+                                <%= d.cost %> บาท
+                            </td>
 
                         </tr>
                     </tfoot>
@@ -138,7 +174,10 @@
 
             <br><br>
             <form action="/order-product" method="post">
-
+                <!--จำสถานะการค้นหา ปัจจุบัน เพื่อเรียกใช้ตอนกด ย้อนกลับ-->
+                <input type="text" id="searchKeyWordIndex" name="searchKeyWordIndex">
+                <input type="text" id="searchKeyWord1" name="searchKeyWord1">
+                <input type="text" id="searchKeyWord2" name="searchKeyWord2">
                 <button type="submit" class="btn btn-primary w-25">กลับ</button>
 
             </form>
@@ -149,12 +188,8 @@
 
 
 
-        <!--Function increase and decrease buy product-->
-        <script>
-
-
-
-        </script>
+        <!--Function update or delete order item-->
+        <script src="javaScript/order-description.js"></script>
 
         <!-- insert layout/commonBody.ejs file-->
         <%- include('layouts/commonBody') %>

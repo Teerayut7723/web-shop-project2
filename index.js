@@ -732,53 +732,243 @@ app.all('/order-product', (request, response) => {
     let searchDateStart = request.body.searchDateStart || '' //รับค่า keyword searchDateStart เพื่อทำการค้นหา
     let searchDateEnd = request.body.searchDateEnd || '' //รับค่า keyword searchDateEnd เพื่อทำการค้นหา
 
+    let searchKeyWord1 = request.body.searchKeyWord1 || '' // รับค่า search keyword เพื่อจำไว้ใช้ sort data
+    let searchKeyWord2 = request.body.searchKeyWord2 || '' // รับค่า search keyword เพื่อจำไว้ใช้ sort data
+    let searchKeyWordIndex = request.body.searchKeyWordIndex || '' // รับค่า search keyword index เพื่อแยกว่ามาจากการ search แบบใด
+
+    var statusOrder = request.body.statusOrder || '' // รับค่าสถานะการส่งสินค้า
+
     let userName = request.session.userName || '' // admin log-in
+
+    let dt = new Date(); let m = dt.getMonth() + 1; m = (m > 10) ? m : '0' + m;
+    let d = dt.getDate();
+    d = (d > 10) ? d : '0' + d;
+    let today = `${dt.getFullYear()}-${m}-${d}`;
 
     if (request.session.userName) {
         // response.render('add-product', { user: userName }) //ถ้า login แล้ว
 
-
         if (request.method == 'GET') {
 
-
-            response.render('order-product', { user: userName, data: '' })
+            response.render('order-product', {
+                user: userName,
+                data: '',
+                selectIndex: statusOrder,
+                searchBankID: searchBankID,
+                searchOrderID: searchOrderID,
+                searchName: searchName,
+                searchDateStart: today,
+                searchDateEnd: today,
+                dateCheck: 'true' // เข้าหน้านี้ครั้งแรก
+            })
             return
         }
+
+        if (searchKeyWordIndex == 'a' && searchKeyWord1 != '') { // a แทน search by bank ID
+            searchBankID = searchKeyWord1
+
+        } else if (searchKeyWordIndex == 'b' && searchKeyWord1 != '') { // b แทน search by order ID
+            searchOrderID = searchKeyWord1
+        } else if (searchKeyWordIndex == 'c' && searchKeyWord1 != '') { // c แทน search by customer name
+            searchName = searchKeyWord1
+        } else if (searchKeyWordIndex == 'd') { // d แทน search by date
+            searchDateStart = searchKeyWord1
+            searchDateEnd = searchKeyWord2
+        }
+
+
         if (searchBankID != '') {
-            Order
-                .find({ bankID: new RegExp(searchBankID, 'i') })
-                .exec((err, docs) => {
 
-                    response.render('order-product', { user: userName, data: docs })
-                })
+            if (statusOrder == 'all' || statusOrder == '') { // sort ด้วย bank ID status ทั้งหมด
+
+                Order
+                    .find({ bankID: new RegExp(searchBankID, 'i') })
+                    .exec((err, docs) => {
+
+                        response.render('order-product', {
+                            user: userName,
+                            data: docs,
+                            selectIndex: statusOrder,
+                            searchBankID: searchBankID,
+                            searchOrderID: searchOrderID,
+                            searchName: searchName,
+                            searchDateStart: today,
+                            searchDateEnd: today,
+                            dateCheck: 'false' // เคยเข้าหน้านี้แล้ว
+                        })
+                    })
+            } else {
+
+                Order
+                    .find({ bankID: new RegExp(searchBankID, 'i') })
+                    .where('statusOrder').equals(statusOrder)
+                    .exec((err, docs) => {
+
+                        response.render('order-product', {
+                            user: userName,
+                            data: docs,
+                            selectIndex: statusOrder,
+                            searchBankID: searchBankID,
+                            searchOrderID: searchOrderID,
+                            searchName: searchName,
+                            searchDateStart: today,
+                            searchDateEnd: today,
+                            dateCheck: 'false' // เคยเข้าหน้านี้แล้ว
+                        })
+                    })
+            }
+
         } else if (searchOrderID != '') {
-            Order
-                .find({ orderID: new RegExp(searchOrderID, 'i') })
-                .exec((err, docs) => {
+            if (statusOrder == 'all' || statusOrder == '') { // sort ด้วย order ID status ทั้งหมด
+                Order
+                    .find({ orderID: new RegExp(searchOrderID, 'i') })
+                    .exec((err, docs) => {
 
-                    response.render('order-product', { user: userName, data: docs })
-                })
+                        response.render('order-product', {
+                            user: userName,
+                            data: docs,
+                            selectIndex: statusOrder,
+                            searchBankID: searchBankID,
+                            searchOrderID: searchOrderID,
+                            searchName: searchName,
+                            searchDateStart: today,
+                            searchDateEnd: today,
+                            dateCheck: 'false' // เคยเข้าหน้านี้แล้ว
+                        })
+                    })
+            } else {
+                Order
+                    .find({ orderID: new RegExp(searchOrderID, 'i') })
+                    .where('statusOrder').equals(statusOrder)
+                    .exec((err, docs) => {
+
+                        response.render('order-product', {
+                            user: userName,
+                            data: docs,
+                            selectIndex: statusOrder,
+                            searchBankID: searchBankID,
+                            searchOrderID: searchOrderID,
+                            searchName: searchName,
+                            searchDateStart: today,
+                            searchDateEnd: today,
+                            dateCheck: 'false' // เคยเข้าหน้านี้แล้ว
+                        })
+                    })
+            }
         } else if (searchName != '') {
-            Order
-                .find({ address: new RegExp(searchName, 'i') })
-                .exec((err, docs) => {
+            if (statusOrder == 'all' || statusOrder == '') { // sort ด้วย customer name status ทั้งหมด
+                Order
+                    .find({ address: new RegExp(searchName, 'i') })
+                    .exec((err, docs) => {
 
-                    response.render('order-product', { user: userName, data: docs })
-                })
+                        response.render('order-product', {
+                            user: userName,
+                            data: docs,
+                            selectIndex: statusOrder,
+                            searchBankID: searchBankID,
+                            searchOrderID: searchOrderID,
+                            searchName: searchName,
+                            searchDateStart: today,
+                            searchDateEnd: today,
+                            dateCheck: 'false' // เคยเข้าหน้านี้แล้ว
+                        })
+                    })
+            } else {
+                Order
+                    .find({ address: new RegExp(searchName, 'i') })
+                    .where('statusOrder').equals(statusOrder)
+                    .exec((err, docs) => {
+
+                        response.render('order-product', {
+                            user: userName,
+                            data: docs,
+                            selectIndex: statusOrder,
+                            searchBankID: searchBankID,
+                            searchOrderID: searchOrderID,
+                            searchName: searchName,
+                            searchDateStart: today,
+                            searchDateEnd: today,
+                            dateCheck: 'false' // เคยเข้าหน้านี้แล้ว
+                        })
+                    })
+            }
         } else if (searchDateEnd != '') {
-            Order
-                .find({ orderDate: { $gte: searchDateStart, $lte: searchDateEnd } })
-                .exec((err, docs) => {
+            if (statusOrder == 'all' || statusOrder == '') { // sort ด้วย date status ทั้งหมด
+                Order
+                    .find({ orderDate: { $gte: searchDateStart, $lte: searchDateEnd } })
+                    .exec((err, docs) => {
 
-                    response.render('order-product', { user: userName, data: docs })
-                })
+                        response.render('order-product', {
+                            user: userName,
+                            data: docs,
+                            selectIndex: statusOrder,
+                            searchBankID: searchBankID,
+                            searchOrderID: searchOrderID,
+                            searchName: searchName,
+                            searchDateStart: searchDateStart,
+                            searchDateEnd: searchDateEnd,
+                            dateCheck: 'false' // เคยเข้าหน้านี้แล้ว
+                        })
+                    })
+            } else {
+                Order
+                    .find({ orderDate: { $gte: searchDateStart, $lte: searchDateEnd } })
+                    .where('statusOrder').equals(statusOrder)
+                    .exec((err, docs) => {
+
+                        response.render('order-product', {
+                            user: userName,
+                            data: docs,
+                            selectIndex: statusOrder,
+                            searchBankID: searchBankID,
+                            searchOrderID: searchOrderID,
+                            searchName: searchName,
+                            searchDateStart: searchDateStart,
+                            searchDateEnd: searchDateEnd,
+                            dateCheck: 'false' // เคยเข้าหน้านี้แล้ว
+                        })
+                    })
+            }
         } else { // หาทั้งหมด
-            Order
-                .find()
-                .exec((err, docs) => {
 
-                    response.render('order-product', { user: userName, data: docs })
-                })
+            if (statusOrder == 'all' || statusOrder == '') { // sort status all
+
+                Order
+                    .find()
+                    .exec((err, docs) => {
+
+                        response.render('order-product', {
+                            user: userName,
+                            data: docs,
+                            selectIndex: statusOrder,
+                            searchBankID: searchBankID,
+                            searchOrderID: searchOrderID,
+                            searchName: searchName,
+                            searchDateStart: today,
+                            searchDateEnd: today,
+                            dateCheck: 'false' // เคยเข้าหน้านี้แล้ว
+                        })
+                    })
+            } else {
+
+                Order
+                    .find()
+                    .where('statusOrder').equals(statusOrder)
+                    .exec((err, docs) => {
+
+                        response.render('order-product', {
+                            user: userName,
+                            data: docs,
+                            selectIndex: statusOrder,
+                            searchBankID: searchBankID,
+                            searchOrderID: searchOrderID,
+                            searchName: searchName,
+                            searchDateStart: today,
+                            searchDateEnd: today,
+                            dateCheck: 'false' // เคยเข้าหน้านี้แล้ว
+                        })
+                    })
+            }
         }
 
     } else {
@@ -793,6 +983,9 @@ app.all('/order-description', (request, response) => {
 
 
     let orderID = request.body.orderID || '' // Recieve data order ID
+
+    let searchKeyWord = request.body.searchKeyWord || '' // รับค่า search keyword เพื่อจำไว้ใช้ sort data
+    let searchKeyWordIndex = request.body.searchKeyWordIndex || '' // รับค่า search keyword index เพื่อแยกว่ามาจากการ search แบบใด
 
     if (request.session.userName) {
 
@@ -809,7 +1002,101 @@ app.all('/order-description', (request, response) => {
                     response.render('order-description', { data: docs, list: list })
                 }
             })
+    } else {
+        response.render('web-management') //ถ้าไม่ได้ทำการ login ให้เปิดหน้าทำการ login
     }
+})
+
+// order update รายละเอียดการจัดส่งสินค้า
+
+app.all('/update-order', (request, response) => {
+
+    let postID = request.body.postID || '' // รับค่าหมายเลขพัสดุ
+    let statusOrder = request.body.statusOrder || '' // รับค่าสถานะการส่งสินค้า
+
+    let orderID = request.body.orderID || '' // รับค่าหมายเลขสั่งสินค้า
+
+    if (request.session.userName) {
+
+        Order
+            .findOneAndUpdate({ orderID: new RegExp(orderID, 'i') }, {
+                postID: postID,
+                statusOrder: statusOrder,
+
+            },
+                { useFindAndModify: false })
+            .exec(err => {
+                if (!err) {
+                    Order
+                        .find()
+                        .where('orderID').equals(orderID)
+                        .exec((err, docs) => {
+                            if (!err) {
+                                var list
+                                for (d of docs) {
+                                    list = d.orderList
+                                }
+
+                                response.render('order-description', { data: docs, list: list })
+                            }
+                        })
+                }
+            })
+    } else {
+        response.render('web-management') //ถ้าไม่ได้ทำการ login ให้เปิดหน้าทำการ login
+    }
+})
+
+// delete data order in database
+
+app.all('/order-delete', (request, response) => {
+
+    let orderID = request.body.orderID || ''
+
+    if (request.session.userName) {
+
+
+        const dir = 'public/upload/'
+        let listImage = ''
+
+        Order.find({ orderID: new RegExp(orderID, 'i') }).exec((err, docs) => {
+
+            if (!err) {
+                //Read list image
+                for (d of docs) {
+                    listImage = d.images
+                }
+                let arrListImage = listImage.split(',') //แยกรายชื่อรูปภาพเป็น array
+
+                // กำหนด directory ที่จะลบของแต่ละภาพและทำการลบออกจาก server
+                for (i in arrListImage) {
+                    let fileDelete = ''
+
+                    fileDelete = dir + arrListImage[i]
+
+                    fs.unlink(fileDelete, function (err) {
+                        if (err) { throw err }
+                        //     console.log('file deleted!')
+                    })
+                }
+
+                // delect data in database
+                Order
+                    .findOneAndDelete({ orderID: new RegExp(orderID, 'i') }, { useFindAndModify: false })
+                    .exec(err => {
+                        if (!err) {
+                            response.redirect('/order-product')
+                        }
+                    })
+
+            }
+
+        })
+
+    } else {
+        response.render('web-management') //ถ้าไม่ได้ทำการ login ให้เปิดหน้าทำการ login
+    }
+
 })
 
 // รายละเอียดย่อยของแต่ละสินค้า พร้อมการเลือกจำนวน และสั่งซื้อ
@@ -1297,6 +1584,8 @@ app.all('/order', (request, response) => {
                             address: address,
                             images: newName,
                             orderList: listItemOder,
+                            statusOrder: 'ต้องจัดส่ง',
+                            postID: '-',
                         }
 
                         Order
@@ -1357,6 +1646,7 @@ app.all('/order', (request, response) => {
     // });
 
 })
+
 
 // ค้นหาสินค้า
 
