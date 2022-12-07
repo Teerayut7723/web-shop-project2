@@ -340,6 +340,10 @@ app.all('/admin777/order-product', (request, response) => {
 // หน้า web management จัดการร้าน
 app.all('/web-management', (request, response) => {
 
+    response.clearCookie('keyWord1') // ลบ cookie
+    response.clearCookie('keyWord2') // ลบ cookie
+    response.clearCookie('keyWordIndex') // ลบ cookie
+    response.clearCookie('statusOrderIndex') // ลบ cookie
     response.render('web-management')
 })
 
@@ -725,6 +729,7 @@ app.all('/delete-data', (request, response) => {
 // ดูรายการสั่งสินค้าของลูกค้า
 app.all('/order-product', (request, response) => {
 
+    let searchAll = request.body.searchAll || '' //รับค่า keyword search all order เพื่อทำการค้นหา
     let searchBankID = request.body.searchBankID || '' //รับค่า keyword BankID เพื่อทำการค้นหา
     let searchOrderID = request.body.searchOrderID || '' //รับค่า keyword OrderID เพื่อทำการค้นหา
     let searchName = request.body.searchName || '' //รับค่า keyword Name เพื่อทำการค้นหา
@@ -735,6 +740,11 @@ app.all('/order-product', (request, response) => {
     let searchKeyWord1 = request.body.searchKeyWord1 || '' // รับค่า search keyword เพื่อจำไว้ใช้ sort data
     let searchKeyWord2 = request.body.searchKeyWord2 || '' // รับค่า search keyword เพื่อจำไว้ใช้ sort data
     let searchKeyWordIndex = request.body.searchKeyWordIndex || '' // รับค่า search keyword index เพื่อแยกว่ามาจากการ search แบบใด
+
+    let keyWord1 = request.cookies.keyWord1 || '' // อ่านค่า keyword 1 จาก cookies
+    let keyWord2 = request.cookies.keyWord2 || '' // อ่านค่า keyword 2 จาก cookies
+    let keyWordIndex = request.cookies.keyWordIndex || '' // อ่านค่า keyword index จาก cookies
+    let statusOrderIndex = request.cookies.statusOrderIndex || '' // อ่านค่า status order index จาก cookie
 
     var statusOrder = request.body.statusOrder || '' // รับค่าสถานะการส่งสินค้า
 
@@ -750,10 +760,15 @@ app.all('/order-product', (request, response) => {
 
         if (request.method == 'GET') {
 
+            response.clearCookie('keyWord1') // ลบ cookie
+            response.clearCookie('keyWord2') // ลบ cookie
+            response.clearCookie('keyWordIndex') // ลบ cookie
+            response.clearCookie('statusOrderIndex') // ลบ cookie
             response.render('order-product', {
                 user: userName,
                 data: '',
                 selectIndex: statusOrder,
+                searchAll: searchAll,
                 searchBankID: searchBankID,
                 searchOrderID: searchOrderID,
                 searchName: searchName,
@@ -771,13 +786,34 @@ app.all('/order-product', (request, response) => {
             searchOrderID = searchKeyWord1
         } else if (searchKeyWordIndex == 'c' && searchKeyWord1 != '') { // c แทน search by customer name
             searchName = searchKeyWord1
+        } else if (searchKeyWordIndex == 'e' && searchKeyWord1 != '') { // e แทน search all order
+
+            searchAll = searchKeyWord1
+            searchBankID = ''
+            searchOrderID = ''
+            searchName = ''
+            searchDateStart = ''
+            searchDateEnd = ''
+
         } else if (searchKeyWordIndex == 'd') { // d แทน search by date
             searchDateStart = searchKeyWord1
             searchDateEnd = searchKeyWord2
         }
+        // รับค่าจาก cookie ถ้ากดกลับมาจาก หน้า order-description
+        if (searchKeyWord1 == '' || statusOrder == '') {
+            searchKeyWord1 = keyWord1
+            searchKeyWord2 = keyWord2
+            searchKeyWordIndex = keyWordIndex
+            statusOrder = statusOrderIndex
+        }
 
 
         if (searchBankID != '') {
+
+            response.cookie('keyWord1', searchBankID) // สร้าง cookie จัดเก็บค่า keyWord1
+            response.cookie('keyWord2', searchBankID) // สร้าง cookie จัดเก็บค่า keyWord1
+            response.cookie('keyWordIndex', 'a') // สร้าง cookie จัดเก็บค่า keyWord index
+            response.cookie('statusOrderIndex', statusOrder) // สร้าง cookie จัดเก็บค่า keyWord index
 
             if (statusOrder == 'all' || statusOrder == '') { // sort ด้วย bank ID status ทั้งหมด
 
@@ -789,6 +825,7 @@ app.all('/order-product', (request, response) => {
                             user: userName,
                             data: docs,
                             selectIndex: statusOrder,
+                            searchAll: searchAll,
                             searchBankID: searchBankID,
                             searchOrderID: searchOrderID,
                             searchName: searchName,
@@ -808,6 +845,7 @@ app.all('/order-product', (request, response) => {
                             user: userName,
                             data: docs,
                             selectIndex: statusOrder,
+                            searchAll: searchAll,
                             searchBankID: searchBankID,
                             searchOrderID: searchOrderID,
                             searchName: searchName,
@@ -819,6 +857,11 @@ app.all('/order-product', (request, response) => {
             }
 
         } else if (searchOrderID != '') {
+
+            response.cookie('keyWord1', searchOrderID) // สร้าง cookie จัดเก็บค่า keyWord1
+            response.cookie('keyWord2', searchOrderID) // สร้าง cookie จัดเก็บค่า keyWord1
+            response.cookie('keyWordIndex', 'b') // สร้าง cookie จัดเก็บค่า keyWord index
+            response.cookie('statusOrderIndex', statusOrder) // สร้าง cookie จัดเก็บค่า keyWord index
             if (statusOrder == 'all' || statusOrder == '') { // sort ด้วย order ID status ทั้งหมด
                 Order
                     .find({ orderID: new RegExp(searchOrderID, 'i') })
@@ -828,6 +871,7 @@ app.all('/order-product', (request, response) => {
                             user: userName,
                             data: docs,
                             selectIndex: statusOrder,
+                            searchAll: searchAll,
                             searchBankID: searchBankID,
                             searchOrderID: searchOrderID,
                             searchName: searchName,
@@ -846,6 +890,7 @@ app.all('/order-product', (request, response) => {
                             user: userName,
                             data: docs,
                             selectIndex: statusOrder,
+                            searchAll: searchAll,
                             searchBankID: searchBankID,
                             searchOrderID: searchOrderID,
                             searchName: searchName,
@@ -856,6 +901,11 @@ app.all('/order-product', (request, response) => {
                     })
             }
         } else if (searchName != '') {
+
+            response.cookie('keyWord1', searchName) // สร้าง cookie จัดเก็บค่า keyWord1
+            response.cookie('keyWord2', searchName) // สร้าง cookie จัดเก็บค่า keyWord1
+            response.cookie('keyWordIndex', 'c') // สร้าง cookie จัดเก็บค่า keyWord index
+            response.cookie('statusOrderIndex', statusOrder) // สร้าง cookie จัดเก็บค่า keyWord index
             if (statusOrder == 'all' || statusOrder == '') { // sort ด้วย customer name status ทั้งหมด
                 Order
                     .find({ address: new RegExp(searchName, 'i') })
@@ -865,6 +915,7 @@ app.all('/order-product', (request, response) => {
                             user: userName,
                             data: docs,
                             selectIndex: statusOrder,
+                            searchAll: searchAll,
                             searchBankID: searchBankID,
                             searchOrderID: searchOrderID,
                             searchName: searchName,
@@ -883,6 +934,7 @@ app.all('/order-product', (request, response) => {
                             user: userName,
                             data: docs,
                             selectIndex: statusOrder,
+                            searchAll: searchAll,
                             searchBankID: searchBankID,
                             searchOrderID: searchOrderID,
                             searchName: searchName,
@@ -893,6 +945,10 @@ app.all('/order-product', (request, response) => {
                     })
             }
         } else if (searchDateEnd != '') {
+            response.cookie('keyWord1', searchDateStart) // สร้าง cookie จัดเก็บค่า keyWord1
+            response.cookie('keyWord2', searchDateEnd) // สร้าง cookie จัดเก็บค่า keyWord1
+            response.cookie('keyWordIndex', 'd') // สร้าง cookie จัดเก็บค่า keyWord index
+            response.cookie('statusOrderIndex', statusOrder) // สร้าง cookie จัดเก็บค่า keyWord index
             if (statusOrder == 'all' || statusOrder == '') { // sort ด้วย date status ทั้งหมด
                 Order
                     .find({ orderDate: { $gte: searchDateStart, $lte: searchDateEnd } })
@@ -902,6 +958,7 @@ app.all('/order-product', (request, response) => {
                             user: userName,
                             data: docs,
                             selectIndex: statusOrder,
+                            searchAll: searchAll,
                             searchBankID: searchBankID,
                             searchOrderID: searchOrderID,
                             searchName: searchName,
@@ -920,6 +977,7 @@ app.all('/order-product', (request, response) => {
                             user: userName,
                             data: docs,
                             selectIndex: statusOrder,
+                            searchAll: searchAll,
                             searchBankID: searchBankID,
                             searchOrderID: searchOrderID,
                             searchName: searchName,
@@ -930,7 +988,10 @@ app.all('/order-product', (request, response) => {
                     })
             }
         } else { // หาทั้งหมด
-
+            response.cookie('keyWord1', searchAll) // สร้าง cookie จัดเก็บค่า keyWord1
+            response.cookie('keyWord2', searchAll) // สร้าง cookie จัดเก็บค่า keyWord1
+            response.cookie('keyWordIndex', 'e') // สร้าง cookie จัดเก็บค่า keyWord index
+            response.cookie('statusOrderIndex', statusOrder) // สร้าง cookie จัดเก็บค่า keyWord index
             if (statusOrder == 'all' || statusOrder == '') { // sort status all
 
                 Order
@@ -941,9 +1002,10 @@ app.all('/order-product', (request, response) => {
                             user: userName,
                             data: docs,
                             selectIndex: statusOrder,
-                            searchBankID: searchBankID,
-                            searchOrderID: searchOrderID,
-                            searchName: searchName,
+                            searchAll: searchAll,
+                            searchBankID: '',
+                            searchOrderID: '',
+                            searchName: '',
                             searchDateStart: today,
                             searchDateEnd: today,
                             dateCheck: 'false' // เคยเข้าหน้านี้แล้ว
@@ -960,9 +1022,10 @@ app.all('/order-product', (request, response) => {
                             user: userName,
                             data: docs,
                             selectIndex: statusOrder,
-                            searchBankID: searchBankID,
-                            searchOrderID: searchOrderID,
-                            searchName: searchName,
+                            searchAll: searchAll,
+                            searchBankID: '',
+                            searchOrderID: '',
+                            searchName: '',
                             searchDateStart: today,
                             searchDateEnd: today,
                             dateCheck: 'false' // เคยเข้าหน้านี้แล้ว
@@ -984,8 +1047,10 @@ app.all('/order-description', (request, response) => {
 
     let orderID = request.body.orderID || '' // Recieve data order ID
 
-    let searchKeyWord = request.body.searchKeyWord || '' // รับค่า search keyword เพื่อจำไว้ใช้ sort data
-    let searchKeyWordIndex = request.body.searchKeyWordIndex || '' // รับค่า search keyword index เพื่อแยกว่ามาจากการ search แบบใด
+    let keyWord1 = request.cookies.keyWord1 || '' // อ่านค่า keyword 1 จาก cookies
+    let keyWord2 = request.cookies.keyWord2 || '' // อ่านค่า keyword 2 จาก cookies
+    let keyWordIndex = request.cookies.keyWordIndex || '' // อ่านค่า keyword index จาก cookies
+    let statusOrderIndex = request.cookies.statusOrderIndex || '' // อ่านค่า status index จาก cookies
 
     if (request.session.userName) {
 
@@ -999,7 +1064,14 @@ app.all('/order-description', (request, response) => {
                         list = d.orderList
                     }
 
-                    response.render('order-description', { data: docs, list: list })
+                    response.render('order-description', {
+                        data: docs,
+                        list: list,
+                        keyWord1: keyWord1,
+                        keyWord2: keyWord2,
+                        keyWordIndex: keyWordIndex,
+                        statusOrderIndex: statusOrderIndex
+                    })
                 }
             })
     } else {
@@ -1013,6 +1085,11 @@ app.all('/update-order', (request, response) => {
 
     let postID = request.body.postID || '' // รับค่าหมายเลขพัสดุ
     let statusOrder = request.body.statusOrder || '' // รับค่าสถานะการส่งสินค้า
+
+    let keyWord1 = request.cookies.keyWord1 || '' // อ่านค่า keyword 1 จาก cookies
+    let keyWord2 = request.cookies.keyWord2 || '' // อ่านค่า keyword 2 จาก cookies
+    let keyWordIndex = request.cookies.keyWordIndex || '' // อ่านค่า keyword index จาก cookies
+    let statusOrderIndex = request.cookies.statusOrderIndex || '' // อ่านค่า status order index จาก cookie
 
     let orderID = request.body.orderID || '' // รับค่าหมายเลขสั่งสินค้า
 
@@ -1037,7 +1114,14 @@ app.all('/update-order', (request, response) => {
                                     list = d.orderList
                                 }
 
-                                response.render('order-description', { data: docs, list: list })
+                                response.render('order-description', {
+                                    data: docs,
+                                    list: list,
+                                    keyWord1: keyWord1,
+                                    keyWord2: keyWord2,
+                                    keyWordIndex: keyWordIndex,
+                                    statusOrderIndex: statusOrderIndex
+                                })
                             }
                         })
                 }
@@ -1052,6 +1136,11 @@ app.all('/update-order', (request, response) => {
 app.all('/order-delete', (request, response) => {
 
     let orderID = request.body.orderID || ''
+
+    let keyWord1 = request.cookies.keyWord1 || '' // อ่านค่า keyword 1 จาก cookies
+    let keyWord2 = request.cookies.keyWord2 || '' // อ่านค่า keyword 2 จาก cookies
+    let keyWordIndex = request.cookies.keyWordIndex || '' // อ่านค่า keyword index จาก cookies
+    let statusOrderIndex = request.cookies.statusOrderIndex || '' // อ่านค่า status order index จาก cookie
 
     if (request.session.userName) {
 
@@ -1085,7 +1174,13 @@ app.all('/order-delete', (request, response) => {
                     .findOneAndDelete({ orderID: new RegExp(orderID, 'i') }, { useFindAndModify: false })
                     .exec(err => {
                         if (!err) {
-                            response.redirect('/order-product')
+                            response.render('order-delete', {
+                                msg: 'ลบรายการสั่งซื้อเรียบร้อยแล้ว',
+                                keyWord1: keyWord1,
+                                keyWord2: keyWord2,
+                                keyWordIndex: keyWordIndex,
+                                statusOrderIndex: statusOrderIndex
+                            })
                         }
                     })
 
@@ -1547,7 +1642,7 @@ app.all('/order', (request, response) => {
                             for (d of docs) {
                                 orderDatabaseID = d.orderID
                                 if (orderID == orderDatabaseID) {
-                                    orderID = bankID + '-' + Math.floor(Math.random() * 999999)
+                                    orderID = bankID + '-' + Math.floor(Math.random() * 9999999)
                                     orderIDCheck = 1
                                 }
                             }

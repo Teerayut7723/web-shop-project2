@@ -101,7 +101,9 @@
                                     </select>
                                 </div>
                                 <div class="d-flex flex-row justify-content-between mt-5">
+
                                     <input type="hidden" id="orderID">
+
                                     <button type="submit" class="btn btn-primary" id="updateStatus"
                                         onclick="orderUpdate()">อัพเดตสถานะ</button>
                                     <button type="submit" class="btn btn-primary" id="deleteItem"
@@ -175,9 +177,10 @@
             <br><br>
             <form action="/order-product" method="post">
                 <!--จำสถานะการค้นหา ปัจจุบัน เพื่อเรียกใช้ตอนกด ย้อนกลับ-->
-                <input type="text" id="searchKeyWordIndex" name="searchKeyWordIndex">
-                <input type="text" id="searchKeyWord1" name="searchKeyWord1">
-                <input type="text" id="searchKeyWord2" name="searchKeyWord2">
+                <input type="hidden" id="searchKeyWordIndex" name="searchKeyWordIndex" value="<%= keyWordIndex %>">
+                <input type="hidden" id="searchKeyWord1" name="searchKeyWord1" value="<%= keyWord1 %>">
+                <input type="hidden" id="searchKeyWord2" name="searchKeyWord2" value="<%= keyWord2 %>">
+                <input type="hidden" id="statusOrderIndex" name="statusOrderIndex" value="<%= statusOrderIndex %>">
                 <button type="submit" class="btn btn-primary w-25">กลับ</button>
 
             </form>

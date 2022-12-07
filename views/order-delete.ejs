@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>
+        AP Shopping market - ลบรายการสั่งซื้อสินค้า
+    </title>
+
+    <!-- insert layout/head.ejs file-->
+    <%- include('layouts/head') %>
+
+
+</head>
+
+<body>
+
+    <!--order delete-->
+
+    <div class="container bg-light mt-5">
+
+        <div class="display-6 bg-light m-5"><u>ลบคำสั่งซื้อสินค้า</u></div>
+        <br><br>
+        <% if (locals.msg) { %>
+            <div id="result" style="color:red ;">
+                <%= msg %>
+            </div>
+            <% } %>
+                <br><br>
+                <form action="/order-product" method="post">
+                    <!--จำสถานะการค้นหา ปัจจุบัน เพื่อเรียกใช้ตอนกด ย้อนกลับ-->
+                    <input type="hidden" id="searchKeyWordIndex" name="searchKeyWordIndex" value="<%= keyWordIndex %>">
+                    <input type="hidden" id="searchKeyWord1" name="searchKeyWord1" value="<%= keyWord1 %>">
+                    <input type="hidden" id="searchKeyWord2" name="searchKeyWord2" value="<%= keyWord2 %>">
+                    <input type="hidden" id="statusOrderIndex" name="statusOrderIndex" value="<%= statusOrderIndex %>">
+                    <button type="submit" class="btn btn-primary w-25">กลับ</button>
+
+                </form>
+                <br><br>
+
+    </div>
+
+
+
+
+
+    <script>
+
+    </script>
+
+    <!-- insert layout/commonBody.ejs file-->
+    <%- include('layouts/commonBody') %>
+
+</body>
+
+</html>

@@ -30,7 +30,18 @@
             <% } %>
 
                 <div>
+                    <nav class="navbar navbar-dark bg-danger opacity-50">
+                        <div class="container">
 
+                            <form action="/order-product" method="post" class="d-flex" role="search"
+                                id="formSearchAll">
+                                <input class="form-control me-2" type="search" name="searchAll" id="searchAll"
+                                    placeholder="พิมพ์ 'all'" aria-label="Search" style="width: 200px;" value="<%= searchAll %>">
+                                <button class="btn btn-outline-light w-100 h-25" type="submit">ค้นหาทั้งหมด</button>
+                            </form>
+                        </div>
+                    </nav>
+                    <div style="color:black;">หรือ</div>
                     <nav class="navbar navbar-dark bg-primary">
                         <div class="container">
 
@@ -81,30 +92,31 @@
                                 <!--check มาหน้านี้ครั้งแรก ให้ไม่ต้องอ่านวันที่-->
                                 <% if (locals.dateCheck) { %>
                                     <input type="hidden" id="dateCheck" value="<%= dateCheck %>">
-                              <%  } %>
-                                    
-                                    <label for="searchDateStart"
-                                        style="color:white;">ใส่วันเริ่มต้นที่ต้องการค้นหา</label>
-                                    <input class="form-control me-2" type="date" name="searchDateStart"
-                                        id="searchDateStart" aria-label="Search" style="width: 200px;"
-                                        value="<%= searchDateStart %>" onchange="checkSearchDate()">
+                                    <% } %>
 
-                                    <span style="color:white;">ถึง:&nbsp;&nbsp;</span>
+                                        <label for="searchDateStart"
+                                            style="color:white;">ใส่วันเริ่มต้นที่ต้องการค้นหา</label>
+                                        <input class="form-control me-2" type="date" name="searchDateStart"
+                                            id="searchDateStart" aria-label="Search" style="width: 200px;"
+                                            value="<%= searchDateStart %>" onchange="checkSearchDate()">
 
-                                    <label for="searchDateEnd" style="color:white;">ใส่วันสุดท้ายที่ต้องการค้นหา</label>
-                                    <input class="form-control me-2" type="date" name="searchDateEnd" id="searchDateEnd"
-                                        aria-label="Search" style="width: 200px;" value="<%= searchDateEnd %>"
-                                        onchange="checkSearchDate()">
+                                        <span style="color:white;">ถึง:&nbsp;&nbsp;</span>
 
-                                    <button class="btn btn-outline-light w-25 h-25" type="submit" id="btnSearchDate"
-                                        onclick="searchByDate()">ค้นหา</button>
+                                        <label for="searchDateEnd"
+                                            style="color:white;">ใส่วันสุดท้ายที่ต้องการค้นหา</label>
+                                        <input class="form-control me-2" type="date" name="searchDateEnd"
+                                            id="searchDateEnd" aria-label="Search" style="width: 200px;"
+                                            value="<%= searchDateEnd %>" onchange="checkSearchDate()">
+
+                                        <button class="btn btn-outline-light w-25 h-25" type="submit" id="btnSearchDate"
+                                            onclick="searchByDate()">ค้นหา</button>
                             </form>
                         </div>
                     </nav>
                     <form action="" method="post" id="formSelectStatus">
-                        <input type="text" id="searchKeyWordIndex" name="searchKeyWordIndex">
-                        <input type="text" id="searchKeyWord1" name="searchKeyWord1">
-                        <input type="text" id="searchKeyWord2" name="searchKeyWord2">
+                        <input type="hidden" id="searchKeyWordIndex" name="searchKeyWordIndex">
+                        <input type="hidden" id="searchKeyWord1" name="searchKeyWord1">
+                        <input type="hidden" id="searchKeyWord2" name="searchKeyWord2">
                         <input type="hidden" id="statusSelectIndex" value="<%= selectIndex %>">
                         <div class="mt-3 container" style="text-align:end ;">สถานะการจัดส่งสินค้า: <br>
                             <select name="statusOrder" id="statusOrder" style="height: 50px; width: 200px;"
@@ -133,9 +145,6 @@
 
                                         <form action="/order-description" method="post">
                                             <input type="hidden" name="orderID" value="<%= d.orderID %>">
-                                            <input type="text" id="searchKeyWordIndex" name="searchKeyWordIndex">
-                                            <input type="text" id="searchKeyWord1" name="searchKeyWord1">
-                                            <input type="text" id="searchKeyWord2" name="searchKeyWord2">
                                             <input type="image" src="upload/<%= d.images %>" class="card-img-top"
                                                 alt="Image">
                                         </form>
@@ -240,6 +249,8 @@
                         let searchKeyWord2 = document.getElementById('searchKeyWord2')
                         let searchKeyWordIndex = document.getElementById('searchKeyWordIndex')
 
+                        let searchKeyWordIndexBankID = document.getElementById('searchKeyWordIndexBankID')
+
 
                         // let searchKeyWordDummy1 = document.getElementById('searchKeyWordDummy1')
                         // let searchKeyWordDummy2 = document.getElementById('searchKeyWordDummy2')
@@ -266,6 +277,7 @@
                         }
 
                         //Record search keyword
+                        let searchAll = document.getElementById('searchAll')
 
                         let searchBankID = document.getElementById('searchBankID')
                         let searchOrderID = document.getElementById('searchOrderID')
@@ -281,6 +293,7 @@
                             searchKeyWord1.value = searchBankID.value
                             searchKeyWord2.value = searchBankID.value
                             searchKeyWordIndex.value = 'a' //a แทนการ search แบบ bank ID
+                            searchKeyWordIndexBankID.value = 'a' //a แทนการ search แบบ bank ID ของช่องค้นหาแบบ bank ID
 
                         } else if (searchOrderID.value != '') {
 
@@ -292,17 +305,22 @@
                             searchKeyWord1.value = searchName.value
                             searchKeyWord2.value = searchName.value
                             searchKeyWordIndex.value = 'c' //c แทนการ search แบบ customer name
-                        } else if (dateCheck.value == 'true') {
+                        } else if (dateCheck.value == 'true') { // เข้าหน้านี้ครั้งแรก
                             searchKeyWord1.value = ''
                             searchKeyWord2.value = ''
+
+                        }else if (searchAll.value != '') {
                             
-                        } else if (dateCheck.value == 'false'){
+                            searchKeyWord1.value = 'all'
+                            searchKeyWord2.value = 'all'
+                            searchKeyWordIndex.value = 'e' //e แทนการ search แบบ all order
+                            
+
+                        } else if (dateCheck.value == 'false') {
                             searchKeyWord1.value = searchDateStart.value
                             searchKeyWord2.value = searchDateEnd.value
                             searchKeyWordIndex.value = 'd' //d แทนการ search แบบ date
-                            
                         }
-
                     }
 
                 </script>
