@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <title>
+        AP Shopping market - เพิ่มรูปภาพ carousel
+    </title>
+
+    <style>
+        form, a#index {
+            margin: 20px;
+        }
+        form input,form textarea {
+            margin-bottom: 20px;
+            width: 500px;
+            
+        }
+    </style>
+
+<script>
+    function submitForm() {
+        let file = document.querySelector('[type="file"]')
+        let KB = 5000 //ขนาดไฟน์สูงสุดที่ upload ได้
+        let maxFileSize = KB * 1024
+
+        if (file.files.length > 5) {
+            alert('เลือกได้ไม่เกิน 1 ไฟล์')
+            return
+        }
+
+        for (f of file.files) {
+            if (f.size > (maxFileSize)) {
+                alert(`ขนาดของไฟล์ต้องไม่เกิน ${KB} KB`)
+                return
+            }
+        }
+
+        document.querySelector('form').submit()
+    }
+</script>
+<!-- insert layout/commonHead.ejs file-->
+<%- include('layouts/commonHead') %>
+</head>
+
+<body>
+
+    <div class="display-4 bg-success">Hello <%=user %></div>
+
+    <h2><u>เพิ่มรูปภาพ carousel</u></h2>
+    <br>
+
+    <%# ถ้ามีข้อความส่งมาจากไฟล์หลัก ให้แสดงข้อความนั้น %>
+    <% if (locals.msg ) { %>
+        <div id="result" style="color:red ;"><%= msg %></div>
+    <% } %>
+    <form method="post" action="/carousel-add" enctype="multipart/form-data">
+        <input type="text" name="productCode" placeholder="รหัสสินค้า" required> :รหัสสินค้า<br>
+        <h5>คำอธิบายหลัก</h5>
+        <div><textarea name="mainDescription" id="mainDescription" cols="30" rows="10"></textarea></div>
+        <h5>คำอธิบายย่อย</h5>
+        <div><textarea name="subDescription" id="subDescription" cols="30" rows="20"></textarea></div>
+        <input type="file" name="upfiles" accept="image/*"required><br>
+        <label>ภาพสินค้า ของ carousel</label><br><br>
+
+        <button type="button" onclick="submitForm()">OK</button>
+    </form>
+    <a id="index" href="/web-management">หน้าหลักจัดการร้าน</a><br><br><br>
+    
+
+    <!-- insert layout/commonBody.ejs file-->
+    <%- include('layouts/commonBody') %>
+
+</body>
+
+</html>

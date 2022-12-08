@@ -2,6 +2,9 @@ const express = require('express')
 const Customer = require('./customer')
 const Product = require('./model')
 const Order = require('./order')
+
+const Carousel = require('./carousel') // db carousel
+
 const ejs = require('ejs')
 const bodyParser = require('body-parser')
 //const { request, response } = require('express')
@@ -28,7 +31,7 @@ const { response } = require('express')
 const { env } = require('process')
 const { model, Promise } = require('mongoose')
 const { time } = require('console')
-const order = require('./order')
+//const order = require('./order')
 const { resolve } = require('path')
 
 app.set('view engine', 'ejs')
@@ -331,6 +334,29 @@ app.all('/admin777/order-product', (request, response) => {
 
             request.session.userName = userName // จำผู้ใช้เมื่อ login แล้ว
             response.redirect('/order-product')
+        } else {
+            response.render('admin777', { msg: 'user name หรือ password ไม่ถูกต้อง' })
+        }
+    }
+})
+
+// หน้า admin log-in สำหรับ carousel-add
+app.all('/admin777/carousel-add', (request, response) => {
+
+    if (!request.body.userName) {
+        response.render('admin777')
+    }
+    else {
+        //อ่านข้อมูลจาก form
+        let userName = request.body.userName || ''
+        let userPassword = request.body.userPassword || ''
+        if (userName == 'aobpan7723' && userPassword == '777') {
+
+            //let age = 30 * 60 * 1000 //cookie มีอายุ 30 นาที.
+            //response.cookie('userName', userName, { maxAge: age })
+
+            request.session.userName = userName // จำผู้ใช้เมื่อ login แล้ว
+            response.redirect('/carousel-add')
         } else {
             response.render('admin777', { msg: 'user name หรือ password ไม่ถูกต้อง' })
         }
@@ -724,6 +750,113 @@ app.all('/delete-data', (request, response) => {
 
     }
 
+})
+
+// เพิ่ม slide carousel
+app.all('/carousel-add', (request, response) => {
+
+    if (request.session.userName) {
+        // response.render('add-product', { user: userName }) //ถ้า login แล้ว
+
+
+        if (request.method == 'GET') {
+            let userName = request.session.userName
+            response.render('carousel-add', { user: userName })
+            return
+        }
+        else {
+            let userName = request.session.userName
+            let form = new formidable.IncomingForm({ multiples: true })
+
+            form.parse(request, (err, fields, files) => {
+
+                let upfiles = files.upfiles
+                if (!Array.isArray(files.upfiles)) {
+                    if (files.upfiles.name == '') {  //ถ้าไม่ได้เลือกไฟล์
+                        response.render('add-product', { user: userName })
+                        return
+                    } else {		                //ถ้าเลือกไฟล์เดียว
+                        upfiles = [files.upfiles]
+                    }
+                }
+
+                const dir = 'public/images/'
+                let fileNames = []  //เก็บชื่อของแต่ละไฟล์
+
+                for (f of upfiles) {
+                    var newfile = dir + f.name
+                    let newName = f.name
+
+                    while (fs.existsSync(newfile)) {
+                        let oldName = f.name.split('.')
+                        let r = Math.floor(Math.random() * 999999)
+                        oldName[0] += '_' + r
+                        newName = oldName.join('.')
+                        newfile = dir + newName
+                    }
+                    fileNames.push(newName)
+
+                    //picture resize
+
+                    sharp(f.path)
+                        .resize({
+                            width: 1920,
+                            height: 800,
+                            withoutEnlargement: false
+                        })
+                        .toFile(newfile, err => { })
+
+                }
+
+                //นำชื่อไฟล์มารวมเป็นสตริงเดียวกัน
+                let imgFiles = fileNames.join(',')
+                let data = {
+                    productCode: fields.productCode,
+                    images: imgFiles,
+                    label: fields.mainDescription,
+                    content: fields.subDescription,
+
+                }
+
+                // ตรวจสอบว่า product code มีอยู่หรือไม่ก่อน ทำการบันทึก
+
+                let productCode = fields.productCode
+                let productCodeCheck = ''
+                Product
+                    .find().select('productCode')
+                    .where('productCode').equals(productCode)
+                    .exec((err, docs) => {
+                        if (!err) {
+                            for (d of docs) {
+                                productCodeCheck = d.productCode
+                            }
+                            if (productCode == productCodeCheck) {
+                                Carousel.create(data, err => {
+                                    let r = (err) ? 'ข้อมูลไม่ถูกบันทึก' : 'ข้อมูลบันทึกแล้ว'
+                                    if (r == 'ข้อมูลไม่ถูกบันทึก') {
+                                        deleteImage(newfile)
+                                    }
+                                    response.render('carousel-add', { msg: r, user: userName })
+                                })
+
+                            } else {
+                                deleteImage(newfile)
+                                response.render('carousel-add', { msg: 'ไม่มีรายการสินค้านี้อยู่ ให้ทำการเพิ่มรายกายสินค้านี้ก่อน', user: userName })
+                            }
+                        }
+                    })
+            })
+        }
+    } else {
+        response.render('web-management') //ถ้าไม่ได้ทำการ login ให้เปิดหน้าทำการ login
+    }
+    // ลบรูปภาพออก ถ้ายังไม่มีรายการนี้อยู่ หรือ มี error เกิดขึ้น
+    function deleteImage(fileDelete) {
+        fs.unlink(fileDelete, function (err) {
+            if (err) { throw err }
+            //     console.log('file deleted!')
+        })
+    }
 })
 
 // ดูรายการสั่งสินค้าของลูกค้า
