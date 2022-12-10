@@ -464,20 +464,6 @@ app.all('/add-product', (request, response) => {
                         })
                         .toFile(newfile, err => { })
 
-                    // fs.readFile(f.path, function (err, data) {
-                    //     if (err) { throw err }
-                    //     //console.log('file read!')
-
-                    //     fs.writeFile(newfile, data, function (err) {
-                    //         if (err) { throw err }
-                    //         //console.log('file written!')
-                    //     })
-
-                    //     // fs.unlink(f.path, function (err) {
-                    //     //     if (err) { throw err }
-                    //     //     console.log('file deleted!')
-                    //     // })
-                    // })
                 }
 
                 //นำชื่อไฟล์มารวมเป็นสตริงเดียวกัน
