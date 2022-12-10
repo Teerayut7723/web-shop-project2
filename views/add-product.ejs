@@ -26,8 +26,8 @@
         let KB = 1000 //ขนาดไฟน์สูงสุดที่ upload ได้
         let maxFileSize = KB * 1024
 
-        if (file.files.length > 5) {
-            alert('เลือกได้ไม่เกิน 5 ไฟล์')
+        if (file.files.length > 10) {
+            alert('เลือกได้ไม่เกิน 10 ไฟล์')
             return
         }
 
@@ -66,7 +66,7 @@
         <h5>คำอธิบายย่อย</h5>
         <div><textarea name="subDescription" id="subDescription" cols="30" rows="20"></textarea></div>
         <input type="file" name="upfiles" accept="image/*" multiple required><br>
-        <label>ภาพสินค้า ไม่เกิน 5 ภาพ</label><br><br>
+        <label>ภาพสินค้า ไม่เกิน 10 ภาพ</label><br><br>
 
         <button type="button" onclick="submitForm()">OK</button>
     </form>

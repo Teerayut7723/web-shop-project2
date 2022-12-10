@@ -33,8 +33,3 @@ function deleteOrder() {
 
 
 }
-
-/* <input type="text" id="searchKeyWordIndex" name="searchKeyWordIndex" value="<%= keyWordIndex %>">
-    <input type="text" id="searchKeyWord1" name="searchKeyWord1" value="<%= keyWord1 %>">
-        <input type="text" id="searchKeyWord2" name="searchKeyWord2" value="<%= keyWord2 %>">
-            <input type="text" id="statusOrderIndex" name="statusOrderIndex" value="<%= statusOrderIndex %>">   */

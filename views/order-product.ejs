@@ -193,9 +193,9 @@
 
                         let dt = new Date()
                         let m = dt.getMonth() + 1
-                        m = (m > 10) ? m : '0' + m
+                        m = (m >= 10) ? m : '0' + m
                         let d = dt.getDate()
-                        d = (d > 10) ? d : '0' + d
+                        d = (d >= 10) ? d : '0' + d
                         let today = `${dt.getFullYear()}-${m}-${d}`
 
                         if (selectStartDate.value > selectEndDate.value) {

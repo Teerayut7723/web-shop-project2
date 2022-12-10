@@ -33,6 +33,7 @@ const { model, Promise } = require('mongoose')
 const { time } = require('console')
 //const order = require('./order')
 const { resolve } = require('path')
+const carousel = require('./carousel')
 
 app.set('view engine', 'ejs')
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -76,7 +77,10 @@ app.all('/', (request, response) => {
 
         // อ่านข้อมูล database และส่งไปแสดงที่ card กรณีทำการ log-in แล้ว
         Product.find().exec((err, docs) => {
-            response.render('index', { logedIn: true, user: userName, data: docs, qtyInCart: quantity })
+            Carousel.find().exec((err, carouselDoc) => {
+                response.render('index', { logedIn: true, user: userName, data: docs, qtyInCart: quantity, dataCarousel: carouselDoc })
+            })
+
         })
         //ถ้าไม่ได้ log-in
     } else {
@@ -86,9 +90,11 @@ app.all('/', (request, response) => {
         }
         // อ่านข้อมูล database และส่งไปแสดงที่ card
         Product.find().exec((err, docs) => {
-            response.render('index', { logedIn: false, data: docs, qtyInCart: quantity })
-        })
 
+            Carousel.find().exec((err, carouselDoc) => {
+                response.render('index', { logedIn: false, data: docs, qtyInCart: quantity, dataCarousel: carouselDoc })
+            })
+        })
     }
 
 })
@@ -357,6 +363,29 @@ app.all('/admin777/carousel-add', (request, response) => {
 
             request.session.userName = userName // จำผู้ใช้เมื่อ login แล้ว
             response.redirect('/carousel-add')
+        } else {
+            response.render('admin777', { msg: 'user name หรือ password ไม่ถูกต้อง' })
+        }
+    }
+})
+
+// หน้า admin log-in สำหรับ carousel-delete
+app.all('/admin777/carousel-delete', (request, response) => {
+
+    if (!request.body.userName) {
+        response.render('admin777')
+    }
+    else {
+        //อ่านข้อมูลจาก form
+        let userName = request.body.userName || ''
+        let userPassword = request.body.userPassword || ''
+        if (userName == 'aobpan7723' && userPassword == '777') {
+
+            //let age = 30 * 60 * 1000 //cookie มีอายุ 30 นาที.
+            //response.cookie('userName', userName, { maxAge: age })
+
+            request.session.userName = userName // จำผู้ใช้เมื่อ login แล้ว
+            response.redirect('/carousel-delete')
         } else {
             response.render('admin777', { msg: 'user name หรือ password ไม่ถูกต้อง' })
         }
@@ -832,8 +861,8 @@ app.all('/carousel-add', (request, response) => {
                             }
                             if (productCode == productCodeCheck) {
                                 Carousel.create(data, err => {
-                                    let r = (err) ? 'ข้อมูลไม่ถูกบันทึก' : 'ข้อมูลบันทึกแล้ว'
-                                    if (r == 'ข้อมูลไม่ถูกบันทึก') {
+                                    let r = (err) ? 'รหัสสินค้าซ้ำ' : 'ข้อมูลบันทึกแล้ว'
+                                    if (r == 'รหัสสินค้าซ้ำ') {
                                         deleteImage(newfile)
                                     }
                                     response.render('carousel-add', { msg: r, user: userName })
@@ -856,6 +885,88 @@ app.all('/carousel-add', (request, response) => {
             if (err) { throw err }
             //     console.log('file deleted!')
         })
+    }
+})
+
+// ลบรายการ carousel จาก database
+app.all('/carousel-delete', (request, response) => {
+
+    let searchProductCode = request.body.searchProductCode || '' //รับค่ารหัสสินค้า เพื่อทำการค้นหา
+    let userName = request.session.userName || ''
+
+    if (request.session.userName) {
+        // response.render('add-product', { user: userName }) //ถ้า login แล้ว
+
+
+        if (request.method == 'GET') {
+
+
+            response.render('carousel-delete', { user: userName, data: [''] })
+            return
+        }
+
+        if (searchProductCode != '') {
+
+            // อ่านข้อมูล database และนำไปแสดงที่ ช่องข้อมูลแต่ละช่อง
+            Carousel.find({ productCode: new RegExp(searchProductCode, 'i') }).exec((err, docs) => {
+
+                if (docs == '') { // ถ้า ไม่มีข้อมูลใน database ให้ docs = ว่าง
+
+                    docs = ['']
+                }
+                response.render('carousel-delete', { user: userName, data: docs })
+            })
+        } else { // ถ้า search = ว่าง ให้ data = ว่าง
+
+            response.render('carousel-delete', { user: userName, data: [''] })
+        }
+    } else {
+        response.render('web-management') //ถ้าไม่ได้ทำการ login ให้เปิดหน้าทำการ login
+    }
+
+})
+
+// delete data carousel in database
+
+app.all('/carousel-dataDelete', (request, response) => {
+
+    //let userName = request.session.userName || ''
+    let productCode = request.body.productCode || ''
+
+    if (request.session.userName) {
+
+        const dir = 'public/images/'
+
+        Carousel.find({ productCode: new RegExp(productCode, 'i') }).exec((err, docs) => {
+            if (!err) {
+                //Read list image
+                for (d of docs) {                           
+                // กำหนด directory ที่จะลบของแต่ละภาพและทำการลบออกจาก server
+                
+                  let  fileDelete = dir + d.images
+
+                    fs.unlink(fileDelete, function (err) {
+                        if (err) { throw err }
+                        //     console.log('file deleted!')
+                    })  
+                }
+
+                // delect data in database
+                Carousel
+                    .findOneAndDelete({ productCode: new RegExp(productCode, 'i') }, { useFindAndModify: false })
+                    .exec(err => {
+
+                        if (!err) {
+
+                            response.redirect('/carousel-delete')
+
+                        }
+                    })
+
+            }
+
+        })
+
     }
 })
 
@@ -883,16 +994,16 @@ app.all('/order-product', (request, response) => {
 
     let userName = request.session.userName || '' // admin log-in
 
-    let dt = new Date(); let m = dt.getMonth() + 1; m = (m > 10) ? m : '0' + m;
+    let dt = new Date(); let m = dt.getMonth() + 1; m = (m >= 10) ? m : '0' + m;
     let d = dt.getDate();
-    d = (d > 10) ? d : '0' + d;
+    d = (d >= 10) ? d : '0' + d;
     let today = `${dt.getFullYear()}-${m}-${d}`;
 
     if (request.session.userName) {
         // response.render('add-product', { user: userName }) //ถ้า login แล้ว
 
         if (request.method == 'GET') {
-
+            
             response.clearCookie('keyWord1') // ลบ cookie
             response.clearCookie('keyWord2') // ลบ cookie
             response.clearCookie('keyWordIndex') // ลบ cookie
@@ -911,7 +1022,6 @@ app.all('/order-product', (request, response) => {
             })
             return
         }
-
         if (searchKeyWordIndex == 'a' && searchKeyWord1 != '') { // a แทน search by bank ID
             searchBankID = searchKeyWord1
 
@@ -1714,6 +1824,13 @@ app.all('/buy-products', (request, response) => {
             request.session.cost = grandPriceOrder
             response.render('buy-products', { dataAddress: addressOrder, dataGrandPrice: grandPriceOrder, dataCashMethod: cashMethod })
 
+        }
+    } else { // เป็นสมาชิกแล้ว
+        if (grandPriceOrder == '') {
+            response.render('products-InCart')
+        } else {
+            request.session.cost = grandPriceOrder
+            response.render('buy-products', { dataAddress: addressOrder, dataGrandPrice: grandPriceOrder, dataCashMethod: cashMethod })
         }
     }
 })

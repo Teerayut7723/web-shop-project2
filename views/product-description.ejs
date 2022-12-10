@@ -28,34 +28,56 @@
             <div class="display-6 bg-light m-5"><u>รายละเอียดสินค้า</u></div>
 
             <div class="d-flex flex-md-row flex-column">
-                <div id="carouselExampleControlsNoTouching" class="carousel slide w-75 p-2" data-bs-touch="true"
-                    data-bs-interval="false">
+                <div id="carouselExampleControls" class="carousel slide w-75 p-2" data-bs-ride="carousel"
+                    data-bs-touch="true" data-bs-interval="7777777">
                     <div class="carousel-inner border border-dark">
+                        <% let idCarousel='' ; let number=0; %>
+                            <% for (d of data) { %>
+                                <!--separate for each image name-->
 
-                        <% for (d of data) { %>
-                            <!--separate for each image name-->
+                                <% let imgs=d.images.split(',') %>
 
-                            <% let imgs=d.images.split(',') %>
+                                    <% for (i=0; i < imgs.length; i++) { idCarousel='carousel' + i; number=i + 1; %>
+                                        <% if (i==0) { %>
 
-                                <% for (i=0; i < imgs.length; i++) { %>
+                                            <div class="carousel-item active" id="<%= idCarousel %>">
+                                                <img src="/product-images/<%= imgs[i] %>" class="d-block w-100"
+                                                    alt="Image">
+                                                
+                                                    <p style="position: absolute; bottom: 1px; right: 10px; color: white;">
+                                                        <%= number %>/<%= imgs.length %>
+                                                    </p>
+                                                
+                                            </div>
 
-                                    <div class="carousel-item" id="carousel0">
-                                        <img src="/product-images/<%= imgs[i] %>" class="d-block w-100" alt="Image">
-                                    </div>
-                                    <% } %>
+                                            <% } else { %>
 
-                                        <% } %>
+                                                <div class="carousel-item" id="<%= idCarousel %>">
+                                                    <img src="/product-images/<%= imgs[i] %>" class="d-block w-100"
+                                                        alt="Image">
+                                                    
+                                                        <p style="position: absolute; bottom: 1px; right: 10px; color: white;">
+                                                            <%= number %>/<%= imgs.length %>
+                                                        </p>
+                                                    
+                                                </div>
+
+                                                <% } %>
+                                                    <% } %>
+
+                                                        <% } %>
                     </div>
-                    <button class="carousel-control-prev" type="button"
-                        data-bs-target="#carouselExampleControlsNoTouching" data-bs-slide="prev">
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls"
+                        data-bs-slide="prev">
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                         <span class="visually-hidden">Previous</span>
                     </button>
-                    <button class="carousel-control-next" type="button"
-                        data-bs-target="#carouselExampleControlsNoTouching" data-bs-slide="next">
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls"
+                        data-bs-slide="next">
                         <span class="carousel-control-next-icon" aria-hidden="true"></span>
                         <span class="visually-hidden">Next</span>
                     </button>
+
                 </div>
                 <!--Detail product-->
                 <div class="p-2 w-75">
@@ -152,9 +174,9 @@
             <br><br>
 
         </div>
-        
-            
-        
+
+
+
 
         <!--Function increase and decrease buy product-->
         <script>
@@ -254,8 +276,10 @@
 
                 priceTotal.innerHTML = 'ราคารวม = ' + (buyTotalNum * pricePerPieceNum).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' บาท'
 
-                document.getElementById('carousel0').setAttribute('class', 'carousel-item active')
+                //document.getElementById('carousel0').setAttribute('class', 'carousel-item active')
+
             }
+
 
         </script>
 
